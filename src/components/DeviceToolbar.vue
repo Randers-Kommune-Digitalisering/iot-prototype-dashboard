@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from 'vue'
-const emit = defineEmits(['search-changed', 'view-changed'])
-const selectedView = ref('enhedstype')
-const searchQuery = ref('')
+    import { ref } from 'vue'
+    const emit = defineEmits(['search-changed', 'view-changed'])
+    const selectedView = ref('enhedstype')
+    const searchQuery = ref('')
 </script>
 
 <template>
@@ -26,7 +26,7 @@ const searchQuery = ref('')
             Søg
             <input
                 type="text"
-                placeholder="Søg enhed..."
+                placeholder="Navn, type eller lokation"
                 class="device-search"
                 v-model="searchQuery"
                 @input="emit('search-changed', searchQuery)"
@@ -59,7 +59,6 @@ const searchQuery = ref('')
         display: flex;
         align-items: center;
         gap: .5rem;
-        margin-left: 1rem;
     }
         .toggle-radio {
             position: relative;

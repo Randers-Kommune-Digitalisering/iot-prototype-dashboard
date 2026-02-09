@@ -1,93 +1,112 @@
 <script setup>
-import { ref, computed } from 'vue'
-import DeviceToolbar from '@/components/DeviceToolbar.vue'
+    import { ref, computed } from 'vue'
+    import DeviceToolbar from '@/components/DeviceToolbar.vue'
+    import DeviceDetails from '@/components/DeviceDetails.vue'
 
-const currentView = ref('enhedstype')
-
-
-/* Devices */
-
-const devices = [
-    { id: 1, name: 'Energi', status: 'Online', lastSeen: '5 minutter', location: 'Grønhøjskolen', type: 'Energi', isSyncedWithEnto: true, rssi: -70, deviceModel: 'Milesight Energimåler' },
-    { id: 2, name: 'Vand kælder', status: 'Offline', lastSeen: '2 timer', location: 'Grønhøjskolen', type: 'Vand', isSyncedWithEnto: false, deviceModel: 'Kamstrup Vandmåler' },
-    { id: 3, name: 'Energi', status: 'Online', lastSeen: '10 minutter', location: 'Åbakken', type: 'Energi', isSyncedWithEnto: true, rssi: -60, deviceModel: 'Milesight Energimåler' },
-    { id: 4, name: 'Vand', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Vand', isSyncedWithEnto: true, rssi: -85, deviceModel: 'Kamstrup Vandmåler' },
-    { id: 5, name: 'Indeklima', status: 'Error', lastSeen: '3 dage', error: 'Enheden findes ikke i os2-IoT', location: 'Grønhøjskolen', type: 'Indeklima', isSyncedWithEnto: false, deviceModel: 'Sensirion Indeklimasensor' },
-    { id: 6, name: 'Bevægelse', status: 'Online', lastSeen: '30 sekunder', location: 'Åbakken', type: 'Bevægelse', isSyncedWithEnto: true, battery: 18, rssi: -80, deviceModel: 'Milesight Bevægelsessensor' },
-    { id: 8, name: 'Indeklima', status: 'Online', lastSeen: '15 minutter', location: 'Åbakken', type: 'Indeklima', isSyncedWithEnto: true, battery: 20, rssi: -65, deviceModel: 'Sensirion Indeklimasensor' },
-    { id: 9, name: 'Varme', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Varme', isSyncedWithEnto: true, battery: 75, rssi: -75, deviceModel: 'Kamstrup Varmemåler' },
-]
-
-const devicesByType = computed(() => {
-    const groups = {}
-    devices.forEach(device => {
-        if (device.type === null)
-            device.type = 'Ukendt'
-        if (!groups[device.type])
-            groups[device.type] = []
-        groups[device.type].push(device)
-    })
-    return groups
-})
-
-const devicesByLocation = computed(() => {
-    const groups = {}
-    devices.forEach(device => {
-        if (device.location === null)
-            device.location = 'Ukendt'
-        if (!groups[device.location])
-            groups[device.location] = []
-        groups[device.location].push(device)
-    })
-    return groups
-})
-
-const deviceList = computed(() => {
-    return currentView.value === 'enhedstype' ? devicesByType.value : devicesByLocation.value
-})
+    const currentView = ref('enhedstype')
+    const deviceDetails = ref(null)
+    const selectedDevice = ref(null)
 
 
-/* Search and filtering */ 
+    /* Devices */
 
-const searchQuery = ref('')
+    const devices = [
+        { id: 1, name: 'Energi', status: 'Online', lastSeen: '5 minutter', location: 'Grønhøjskolen', type: 'Energi', isSyncedWithEnto: true, rssi: -70, deviceModel: 'Milesight Energimåler' },
+        { id: 2, name: 'Vand kælder', status: 'Offline', lastSeen: '2 timer', location: 'Grønhøjskolen', type: 'Vand', isSyncedWithEnto: false, deviceModel: 'Kamstrup Vandmåler' },
+        { id: 3, name: 'Energi', status: 'Online', lastSeen: '10 minutter', location: 'Åbakken', type: 'Energi', isSyncedWithEnto: true, rssi: -60, deviceModel: 'Milesight Energimåler' },
+        { id: 4, name: 'Vand', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Vand', isSyncedWithEnto: true, rssi: -85, deviceModel: 'Kamstrup Vandmåler' },
+        { id: 5, name: 'Indeklima', status: 'Error', lastSeen: '3 dage', error: 'Enheden findes ikke i os2-IoT', location: 'Grønhøjskolen', type: 'Indeklima', isSyncedWithEnto: false, deviceModel: 'Sensirion Indeklimasensor' },
+        { id: 6, name: 'Bevægelse', status: 'Online', lastSeen: '30 sekunder', location: 'Åbakken', type: 'Bevægelse', isSyncedWithEnto: true, battery: 18, rssi: -80, deviceModel: 'Milesight Bevægelsessensor' },
+        { id: 8, name: 'Indeklima', status: 'Online', lastSeen: '15 minutter', location: 'Åbakken', type: 'Indeklima', isSyncedWithEnto: true, battery: 20, rssi: -65, deviceModel: 'Sensirion Indeklimasensor' },
+        { id: 9, name: 'Varme', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Varme', isSyncedWithEnto: true, battery: 75, rssi: -75, deviceModel: 'Kamstrup Varmemåler' },
+    ]
 
-const filteredDevices = computed(() => {
-    const q = searchQuery.value.trim().toLowerCase()
-    if (!q) return deviceList.value
-    let filteredList = {}
-    for (const [group, devs] of Object.entries(deviceList.value)) {
-        const matchedDevices = devs.filter(device => {
-            const name = (device.name || '').toLowerCase()
-            const location = (device.location || '').toLowerCase()
-            const type = (device.type || '').toLowerCase()
-            return name.includes(q) || location.includes(q) || type.includes(q)
+    const devicesByType = computed(() => {
+        const groups = {}
+        devices.forEach(device => {
+            if (device.type === null)
+                device.type = 'Ukendt'
+            if (!groups[device.type])
+                groups[device.type] = []
+            groups[device.type].push(device)
         })
-        if (matchedDevices.length > 0) {
-            filteredList[group] = matchedDevices
+        return groups
+    })
+
+    const devicesByLocation = computed(() => {
+        const groups = {}
+        devices.forEach(device => {
+            if (device.location === null)
+                device.location = 'Ukendt'
+            if (!groups[device.location])
+                groups[device.location] = []
+            groups[device.location].push(device)
+        })
+        return groups
+    })
+
+    const deviceList = computed(() => {
+        return currentView.value === 'enhedstype' ? devicesByType.value : devicesByLocation.value
+    })
+
+    /* Toggle device details */
+
+    const showDeviceDetails = (device) => {
+        if (deviceDetails.value) {
+            selectedDevice.value = device
+            deviceDetails.value.showSidebar()
         }
     }
-    return filteredList
-})
 
-const onSearchChanged = (val) => {
-    searchQuery.value = val
-}
 
-const onViewChanged = (val) => {
-    // console.log('View changed to:', val)
-    currentView.value = val
-}
+    /* Search and filtering */ 
+
+    const searchQuery = ref('')
+
+    const filteredDevices = computed(() => {
+        const q = searchQuery.value.trim().toLowerCase()
+        if (!q) return deviceList.value
+        let filteredList = {}
+        for (const [group, devs] of Object.entries(deviceList.value)) {
+            const matchedDevices = devs.filter(device => {
+                const name = (device.name || '').toLowerCase()
+                const location = (device.location || '').toLowerCase()
+                const type = (device.type || '').toLowerCase()
+                return name.includes(q) || location.includes(q) || type.includes(q)
+            })
+            if (matchedDevices.length > 0) {
+                filteredList[group] = matchedDevices
+            }
+        }
+        return filteredList
+    })
+
+    const onSearchChanged = (val) => {
+        searchQuery.value = val
+    }
+
+    const onViewChanged = (val) => {
+        // console.log('View changed to:', val)
+        currentView.value = val
+    }
 </script>
 
 <template>
     <DeviceToolbar @search-changed="onSearchChanged" @view-changed="onViewChanged" />
+    <DeviceDetails ref="deviceDetails" @close="selectedDevice = null" :device="selectedDevice" />
+
     <div class="content-margin">
 
         <div v-for="(group, groupName) in filteredDevices" :key="groupName" class="device-group">
             <div class="device-group-name">{{ groupName }}</div>
 
             <div class="device-list">
-                <div v-for="device in group" :key="device.id" :class="['device-item', device.status.toLowerCase()]">
+                <div
+                    v-for="device in group"
+                    :key="device.id"
+                    :class="['device-item', device.status.toLowerCase(), { selected: selectedDevice && selectedDevice.id === device.id }]"
+                    @click="showDeviceDetails(device)"
+                    >
                     <div class="device-name">
                         {{ device.name }}
                         <div class="status">
@@ -125,6 +144,7 @@ const onViewChanged = (val) => {
     .content-margin {
         margin-top: calc(1.8rem + 3.5rem); /* Add 3.5rem for device toolbar */
         margin-bottom: 2rem;
+        padding-right: 35rem; /* Add space for device device details */
     }
     .device-group {
         margin-top: 2rem;
@@ -150,6 +170,15 @@ const onViewChanged = (val) => {
         border-radius: 0.5rem;
         overflow: hidden;
         user-select: none;
+        cursor: pointer;
+        transition: outline 0.15s;
+        outline: 0.1rem solid transparent;
+    }
+    .device-item:hover {
+        outline: 0.1rem solid #8c8c8c;
+    }
+    .device-item.selected {
+        outline: 0.1rem solid #ffffff;
     }
     .device-item.error {
         background-color: rgb(87, 69, 69);
