@@ -1,6 +1,7 @@
 <script setup>
     import { ref, defineEmits } from 'vue'
     import { useSettings } from '@/settingsStore.js'
+    import { formatTimeAgo } from '../helper'
 
     const emit = defineEmits(['close'])
     const isVisible = ref(false)
@@ -58,7 +59,7 @@
         <template v-if="device">
             <div class="header">{{ device.name }}</div>
             
-            <div class="device-model">{{ device.deviceModel }}</div>
+            <div class="device-model">{{ device.deviceModel?.body?.name }}</div>
 
             <div class="device-details">
 
@@ -72,31 +73,35 @@
                     <span class="detail-value">{{ device.error }}</span>
                 </div>
 
-                <div :class="['detail-item', { 'offline': device.status === 'Offline' || device.status == undefined }]">
+                <!-- <div :class="['detail-item', { 'offline': device.status === 'Offline' || device.status == undefined }]">
                     <span class="detail-label">Status</span>
                     <span class="detail-value">{{ device.status ?? 'Ukendt' }}</span>
-                </div>
-                <div class="detail-item">
+                </div> -->
+                <div :class="['detail-item', 'wide', { 'offline': device.latestReceivedMessage === null || device.latestReceivedMessage?.sentTime === undefined }]">
                     <span class="detail-label">Sidst set</span>
-                    <span class="detail-value">{{ device.lastSeen }} siden</span>
+                    <span class="detail-value">
+                        <template v-if="device.latestReceivedMessage?.sentTime">{{ formatTimeAgo(device.latestReceivedMessage?.sentTime) }} siden</template>
+                        <template v-else>Ukendt</template>
+                    </span>
                 </div>
-                <div :class="['detail-item', { 'error': device.rssi !== undefined && device.rssi <= state.values.thresholds.rssi.error, warning: device.rssi !== undefined && device.rssi <= state.values.thresholds.rssi.warning }]">
+                <div :class="['detail-item', { warning: device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.warning, 'error': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.error }]">
                     <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.rssi, 'rssi')">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.latestReceivedMessage?.rssi, 'rssi')">
                             <i :class="[recentlyCopiedKey === 'rssi' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
                     <span class="detail-label">RSSI</span>
-                    <span class="detail-value">{{ device.rssi ?? '&nbsp;' }}</span>
+                    <span class="detail-value">{{ device.latestReceivedMessage?.rssi ?? '&nbsp;' }}</span>
                 </div>
-                <div :class="['detail-item', { 'error': device.battery !== undefined && device.battery <= state.values.thresholds.battery.error, warning: device.battery !== undefined && device.battery <= state.values.thresholds.battery.warning }]" v-if="device.battery">
+                <div :class="['detail-item', { 'error': device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.error, warning: device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.warning }]"
+                    v-if="device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery !== -1">
                     <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.battery, 'battery')">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.lorawanSettings?.deviceStatusBattery, 'battery')">
                             <i :class="[recentlyCopiedKey === 'battery' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
                     <span class="detail-label">Batteri</span>
-                    <span class="detail-value">{{ device.battery ?? '&nbsp;' }}%</span>
+                    <span class="detail-value">{{ parseInt(device.lorawanSettings?.deviceStatusBattery ?? 0) }}%</span>
                 </div>
 
                 <div class="seperator"></div>
@@ -112,21 +117,21 @@
                 </div>
                 <div class="detail-item wide">
                     <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.type, 'type')">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'type')">
                             <i :class="[recentlyCopiedKey === 'type' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
                     <span class="detail-label">Type</span>
-                    <span class="detail-value">{{ device.type ?? '&nbsp;' }}</span>
+                    <span class="detail-value">{{ device.deviceModel?.body?.name ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
                     <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.location, 'location')">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.commentOnLocation, 'location')">
                             <i :class="[recentlyCopiedKey === 'location' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
                     <span class="detail-label">Lokation</span>
-                    <span class="detail-value">{{ device.location ?? '&nbsp;' }}</span>
+                    <span class="detail-value">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
                 </div>
                 
                 <div class="seperator"></div>
@@ -138,7 +143,7 @@
                         </div>
                     </div>
                     <span class="detail-label">EUI</span>
-                    <span class="detail-value">{{ device.eui ?? '&nbsp;' }}</span>
+                    <span class="detail-value">{{ device.deviceEUI ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
                     <div class="copy-button-wrapper">
@@ -147,7 +152,7 @@
                         </div>
                     </div>
                     <span class="detail-label">AppKey</span>
-                    <span class="detail-value">{{ device.appKey ?? '&nbsp;' }}</span>
+                    <span class="detail-value">{{ device.OTAAapplicationKey ?? '&nbsp;' }}</span>
                 </div>
 
                 <div class="detail-item wide" v-if="state.values.developerMode">
@@ -237,11 +242,11 @@
     .device-details .detail-item.wide {
         grid-column: span 2;
     }
-    .device-details .detail-item.error {
-        background-color: rgba(190, 70, 70, 0.25);
-    }
     .device-details .detail-item.warning {
         background-color: rgba(190, 140, 70, 0.25);
+    }
+    .device-details .detail-item.error {
+        background-color: rgba(190, 70, 70, 0.25);
     }
     .device-details .detail-item.offline {
         background-color: rgba(70, 70, 90, 0.25);

@@ -1,8 +1,10 @@
 <script setup>
-    import { ref, computed } from 'vue'
+    import { ref, computed, onMounted } from 'vue'
     import DeviceToolbar from '@/components/DeviceToolbar.vue'
     import DeviceDetails from '@/components/DeviceDetails.vue'
     import { useSettings } from '@/settingsStore.js'
+    import OS2IoTService from '@/backendService.js'
+    import { formatTimeAgo, sortGroups } from '../helper'
 
     const currentView = ref('lokation') // 'lokation' or 'enhedstype'
     const deviceDetails = ref(null)
@@ -10,42 +12,44 @@
 
     const { state } = useSettings()
 
+    const devices = ref([])
 
-    /* Devices */
+    onMounted(async () => {
+        try {
+            console.log('Loading devices from backend...')
+            const data = await OS2IoTService.getDevices()
+            // Verify data format
+            if (!Array.isArray(data.devices)) {
+                throw new Error('Invalid devices data format')
+            }
+            console.log('Devices loaded:', data.devices)
+            devices.value = data.devices
+        } catch (err) {
+            console.error('Failed to load devices:', err)
+        }
+    })
 
-    const devices = [
-        { id: 1, name: 'Energi', status: 'Online', lastSeen: '5 minutter', location: 'Grønhøjskolen', type: 'Energi', isSyncedWithEnto: true, rssi: -70, deviceModel: 'Milesight Energimåler' },
-        { id: 2, name: 'Vand kælder', status: 'Offline', lastSeen: '2 timer', location: 'Grønhøjskolen', type: 'Vand', isSyncedWithEnto: false, deviceModel: 'Kamstrup Vandmåler' },
-        { id: 3, name: 'Energi', status: 'Online', lastSeen: '10 minutter', location: 'Åbakken', type: 'Energi', isSyncedWithEnto: true, rssi: -60, deviceModel: 'Milesight Energimåler' },
-        { id: 4, name: 'Vand', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Vand', isSyncedWithEnto: true, rssi: -85, deviceModel: 'Kamstrup Vandmåler' },
-        { id: 5, name: 'Indeklima', status: 'Error', lastSeen: '3 dage', error: 'Enheden findes ikke i os2-IoT', location: 'Grønhøjskolen', type: 'Indeklima', isSyncedWithEnto: false, deviceModel: 'Sensirion Indeklimasensor' },
-        { id: 6, name: 'Bevægelse', status: 'Online', lastSeen: '30 sekunder', location: 'Åbakken', type: 'Bevægelse', isSyncedWithEnto: true, battery: 18, rssi: -80, deviceModel: 'Milesight Bevægelsessensor' },
-        { id: 8, name: 'Indeklima', status: 'Online', lastSeen: '15 minutter', location: 'Åbakken', type: 'Indeklima', isSyncedWithEnto: true, battery: 20, rssi: -65, deviceModel: 'Sensirion Indeklimasensor' },
-        { id: 9, name: 'Varme', status: 'Online', lastSeen: '1 minut', location: 'Åbakken', type: 'Varme', isSyncedWithEnto: true, battery: 75, rssi: -75, deviceModel: 'Kamstrup Varmemåler' },
-    ]
 
     const devicesByType = computed(() => {
         const groups = {}
-        devices.forEach(device => {
-            if (device.type === null)
-                device.type = 'Ukendt'
-            if (!groups[device.type])
-                groups[device.type] = []
-            groups[device.type].push(device)
+        const list = Array.isArray(devices.value) ? devices.value : []
+        list.forEach(device => {
+            const type = device?.deviceModel?.body?.name ?? 'Ukendt'
+            if (!groups[type]) groups[type] = []
+            groups[type].push(device)
         })
         return groups
     })
 
     const devicesByLocation = computed(() => {
         const groups = {}
-        devices.forEach(device => {
-            if (device.location === null)
-                device.location = 'Ukendt'
-            if (!groups[device.location])
-                groups[device.location] = []
-            groups[device.location].push(device)
+        const list = Array.isArray(devices.value) ? devices.value : []
+        list.forEach(device => {
+            const location = device?.commentOnLocation ?? 'Ukendt'
+            if (!groups[location]) groups[location] = []
+            groups[location].push(device)
         })
-        return groups
+        return sortGroups(groups)
     })
 
     const deviceList = computed(() => {
@@ -73,14 +77,15 @@
         for (const [group, devs] of Object.entries(deviceList.value)) {
             const matchedDevices = devs.filter(device => {
                 const name = (device.name || '').toLowerCase()
-                const location = (device.location || '').toLowerCase()
-                const type = (device.type || '').toLowerCase()
+                const location = (device.commentOnLocation || '').toLowerCase()
+                const type = (device.deviceModel?.body?.name || '').toLowerCase()
                 return name.includes(q) || location.includes(q) || type.includes(q)
             })
             if (matchedDevices.length > 0) {
                 filteredList[group] = matchedDevices
             }
         }
+        console.log('Filtered devices:', filteredList)
         return filteredList
     })
 
@@ -107,31 +112,35 @@
                 <div
                     v-for="device in group"
                     :key="device.id"
-                    :class="['device-item', device.status.toLowerCase(), { selected: selectedDevice && selectedDevice.id === device.id }]"
+                    :class="['device-item', { offline: device.latestReceivedMessage?.sentTime == undefined, selected: selectedDevice && selectedDevice.id === device.id }]"
                     @click="showDeviceDetails(device)"
                     >
                     <div class="device-name">
-                        {{ device.name }}
                         <div class="status">
-                            <div v-if="device.rssi !== undefined" :class="{ 'warning': device.rssi !== undefined && device.rssi <= state.values.thresholds.rssi.warning }"><i class="fa-solid fa-wifi"></i> {{ device.rssi }}</div>
-                            <div v-if="device.battery !== undefined" :class="{ 'warning': device.battery !== undefined && device.battery <= state.values.thresholds.battery.warning }"><i class="fa-solid fa-battery-three-quarters"></i> {{ device.battery }}%</div>
+                            <div v-if="device.latestReceivedMessage?.rssi !== undefined" :class="{ 'warning': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.warning, 'error': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.error }"><i class="fa-solid fa-wifi"></i> {{ device.latestReceivedMessage?.rssi }}</div>
+                            <div v-if="device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery !== -1" :class="{ 'warning': device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.warning }"><i class="fa-solid fa-battery-three-quarters"></i> {{ parseInt(device.lorawanSettings?.deviceStatusBattery ?? 0) }}%</div>
                         </div>
+                        {{ device.name }}
                         <!-- <span :class="['device-health', device.status.toLowerCase()]">●</span> -->
                     </div>
                     <div class="device-info">
-                        <div class="device-model"><i class="fa-solid fa-microchip"></i> {{ device.deviceModel }}</div>
-                        <div class="last-seen"><i class="fa-solid fa-clock"></i> Set {{ device.lastSeen }} siden</div>
+                        <div class="last-seen"><i class="fa-solid fa-clock"></i>
+                            <template v-if="device.latestReceivedMessage?.sentTime">{{ formatTimeAgo(device.latestReceivedMessage?.sentTime) }} siden</template>
+                            <template v-else>Ukendt</template>
+                        </div>
                         <div :class="['synced-ento', device.isSyncedWithEnto ? 'synced' : 'not-synced']"><i :class="['fa-solid', 'fa-chart-line', ]"></i> {{ device.isSyncedWithEnto ? 'Seneste data findes i Ento' : 'Data mangler i Ento' }}</div>
-                        <div class="location"><i class="fa-solid fa-house-chimney"></i> {{ device.location }}</div>
+                        <div class="device-model" v-if="currentView !== 'enhedstype'"><i class="fa-solid fa-microchip"></i> {{ device.deviceModel?.body?.name }}</div>
+                        <div class="location" v-if="currentView !== 'lokation'"><i class="fa-solid fa-house-chimney"></i> {{ device.commentOnLocation ?? 'Ukendt' }}</div>
                         
                     </div>
 
-                    <div v-if="device.error || device.status == 'Offline'" :class="['device-message', device.error ? 'error' : 'offline']"  aria-live="polite">
+                    <!-- Error banner -->
+                    <!-- <div v-if="device.error || device.status == 'Offline'" :class="['device-message', device.error ? 'error' : 'offline']"  aria-live="polite">
                         <div :class="{ 'scroll-content': device.error?.length > 34 }">
                             <span v-if="device.error" class="text">{{ device.error }}</span>
                             <span v-else class="text">Enheden er offline</span>
                         </div>
-                    </div>
+                    </div> -->
 
                 </div><!-- /device-item -->
             </div><!-- /device-list -->
@@ -176,6 +185,8 @@
         cursor: pointer;
         transition: outline 0.15s;
         outline: 0.1rem solid transparent;
+        display: flex;
+        flex-direction: column;
     }
     .device-item:hover {
         outline: 0.1rem solid #8c8c8c;
@@ -198,8 +209,9 @@
         }
         .status {
             display: flex;
+            flex-direction: column;
             justify-content: flex-end;
-            gap: 0.4rem;
+            gap: 0.6rem;
             float: right;
             font-size: 0.7rem;
             padding-top: 0.4rem;
@@ -218,7 +230,8 @@
             }
 
     .device-info {
-        margin-top: 0.5rem;
+        margin-top: auto;
+        margin-bottom: 0.5rem;
         font-size: 0.9rem;
         color: rgb(180, 180, 180);
         display: flex;
