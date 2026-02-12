@@ -196,15 +196,6 @@
             font-size: 1.1rem;
             font-weight: 500;
         }
-        .device-health {
-            float: right;
-        }
-        .device-health.online {
-            color: #2ecc71;
-        }
-        .device-health.offline {
-            color: #e74c3c;
-        }        
         .status {
             display: flex;
             justify-content: flex-end;

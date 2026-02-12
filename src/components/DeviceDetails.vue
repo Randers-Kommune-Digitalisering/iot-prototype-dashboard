@@ -62,9 +62,19 @@
 
             <div class="device-details">
 
-                <div class="detail-item">
+                <div v-if="device.error" class="detail-item error error-message wide">
+                    <div class="copy-button-wrapper">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.error, 'error')">
+                            <i :class="[recentlyCopiedKey === 'error' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                        </div>
+                    </div>
+                    <span class="detail-label">Fejl</span>
+                    <span class="detail-value">{{ device.error }}</span>
+                </div>
+
+                <div :class="['detail-item', { 'offline': device.status === 'Offline' || device.status == undefined }]">
                     <span class="detail-label">Status</span>
-                    <span class="detail-value">{{ device.status }}</span>
+                    <span class="detail-value">{{ device.status ?? 'Ukendt' }}</span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Sidst set</span>
@@ -77,7 +87,7 @@
                         </div>
                     </div>
                     <span class="detail-label">RSSI</span>
-                    <span class="detail-value">{{ device.rssi }}</span>
+                    <span class="detail-value">{{ device.rssi ?? '&nbsp;' }}</span>
                 </div>
                 <div :class="['detail-item', { 'error': device.battery !== undefined && device.battery <= state.values.thresholds.battery.error, warning: device.battery !== undefined && device.battery <= state.values.thresholds.battery.warning }]" v-if="device.battery">
                     <div class="copy-button-wrapper">
@@ -86,7 +96,7 @@
                         </div>
                     </div>
                     <span class="detail-label">Batteri</span>
-                    <span class="detail-value">{{ device.battery }}%</span>
+                    <span class="detail-value">{{ device.battery ?? '&nbsp;' }}%</span>
                 </div>
 
                 <div class="seperator"></div>
@@ -98,7 +108,7 @@
                         </div>
                     </div>
                     <span class="detail-label">Navn</span>
-                    <span class="detail-value">{{ device.name }}</span>
+                    <span class="detail-value">{{ device.name ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
                     <div class="copy-button-wrapper">
@@ -107,7 +117,7 @@
                         </div>
                     </div>
                     <span class="detail-label">Type</span>
-                    <span class="detail-value">{{ device.type }}</span>
+                    <span class="detail-value">{{ device.type ?? '&nbsp;' }}</span>
                 </div>
                 
                 <div class="seperator"></div>
@@ -231,6 +241,9 @@
     .device-details .detail-item.warning {
         background-color: rgba(190, 140, 70, 0.25);
     }
+    .device-details .detail-item.offline {
+        background-color: rgba(70, 70, 90, 0.25);
+    }
         .device-details .detail-label {
             color: #aaa;
         }
@@ -238,6 +251,17 @@
             font-size: 1.25rem;
             font-weight: 500;
             color: #eee;
+        }
+        .detail-item.error-message {
+            transform: translateY(-0.3rem);
+        }
+        .detail-item.error-message .detail-label {
+            font-weight: 700;
+        }
+        .detail-item.error-message .detail-value {
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 0.2rem;
         }
 
     
@@ -268,7 +292,7 @@
     }
     .detail-item .copy-button:hover {
         color: #ddd;
-        background-color: #373737;
+        background-color: #6262621c;
     }
     .detail-item .copy-button:focus,
     .detail-item .copy-button:focus-visible {
