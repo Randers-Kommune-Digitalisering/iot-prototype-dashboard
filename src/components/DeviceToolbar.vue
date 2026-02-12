@@ -1,7 +1,7 @@
 <script setup>
     import { ref } from 'vue'
     const emit = defineEmits(['search-changed', 'view-changed'])
-    const selectedView = ref('enhedstype')
+    const selectedView = ref('lokation')
     const searchQuery = ref('')
 </script>
 
@@ -11,12 +11,12 @@
         <div class="device-view">
             <span>Visning</span>
             <label class="toggle-radio">
-                <input type="radio" name="view" value="enhedstype" v-model="selectedView" @change="emit('view-changed', selectedView)" />
-                <span :class="{ active: selectedView === 'enhedstype' }">Enhedstype</span>
-            </label>
-            <label class="toggle-radio">
                 <input type="radio" name="view" value="lokation" v-model="selectedView" @change="emit('view-changed', selectedView)" />
                 <span :class="{ active: selectedView === 'lokation' }">Lokation</span>
+            </label>
+            <label class="toggle-radio">
+                <input type="radio" name="view" value="enhedstype" v-model="selectedView" @change="emit('view-changed', selectedView)" />
+                <span :class="{ active: selectedView === 'enhedstype' }">Enhedstype</span>
             </label>
         </div>
 

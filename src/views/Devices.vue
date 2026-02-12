@@ -2,10 +2,13 @@
     import { ref, computed } from 'vue'
     import DeviceToolbar from '@/components/DeviceToolbar.vue'
     import DeviceDetails from '@/components/DeviceDetails.vue'
+    import { useSettings } from '@/settingsStore.js'
 
-    const currentView = ref('enhedstype')
+    const currentView = ref('lokation') // 'lokation' or 'enhedstype'
     const deviceDetails = ref(null)
-    const selectedDevice = ref(null)
+    const selectedDevice = ref({})
+
+    const { state } = useSettings()
 
 
     /* Devices */
@@ -93,7 +96,7 @@
 
 <template>
     <DeviceToolbar @search-changed="onSearchChanged" @view-changed="onViewChanged" />
-    <DeviceDetails ref="deviceDetails" @close="selectedDevice = null" :device="selectedDevice" />
+    <DeviceDetails ref="deviceDetails" @close="selectedDevice = {}" :device="selectedDevice" />
 
     <div class="content-margin">
 
@@ -110,8 +113,8 @@
                     <div class="device-name">
                         {{ device.name }}
                         <div class="status">
-                            <div v-if="device.rssi !== undefined" :class="{ 'weak-rssi': device.rssi < -80 }"><i class="fa-solid fa-wifi"></i> {{ device.rssi }}</div>
-                            <div v-if="device.battery !== undefined" :class="{ 'low-battery': device.battery < 20 }"><i class="fa-solid fa-battery-three-quarters"></i> {{ device.battery }}%</div>
+                            <div v-if="device.rssi !== undefined" :class="{ 'warning': device.rssi !== undefined && device.rssi <= state.values.thresholds.rssi.warning }"><i class="fa-solid fa-wifi"></i> {{ device.rssi }}</div>
+                            <div v-if="device.battery !== undefined" :class="{ 'warning': device.battery !== undefined && device.battery <= state.values.thresholds.battery.warning }"><i class="fa-solid fa-battery-three-quarters"></i> {{ device.battery }}%</div>
                         </div>
                         <!-- <span :class="['device-health', device.status.toLowerCase()]">●</span> -->
                     </div>
@@ -216,11 +219,11 @@
             gap: 0.2rem;
             color: rgb(150, 150, 150);
         }
-            .low-battery {
-                color: rgb(190, 115, 115) !important;
-            }
-            .not-synced, .weak-rssi {
+            .warning {
                 color: rgb(190, 145, 115) !important;
+            }
+            .error {
+                color: rgb(190, 115, 115) !important;
             }
 
     .device-info {
