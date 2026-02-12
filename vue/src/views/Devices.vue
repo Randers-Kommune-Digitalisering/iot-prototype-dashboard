@@ -136,8 +136,12 @@
                     >
                     <div class="device-name">
                         <div class="status">
-                            <div v-if="device.latestReceivedMessage?.rssi !== undefined" :class="{ 'warning': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.warning, 'error': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.error }"><i class="fa-solid fa-wifi"></i> {{ device.latestReceivedMessage?.rssi }}</div>
-                            <div v-if="device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery !== -1" :class="{ 'warning': device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.warning }"><i class="fa-solid fa-battery-three-quarters"></i> {{ parseInt(device.lorawanSettings?.deviceStatusBattery ?? 0) }}%</div>
+                            <div v-if="device.latestReceivedMessage?.rssi !== undefined" :class="{ 'warning': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.warning, 'error': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.error }">
+                                {{ device.latestReceivedMessage?.rssi }}&nbsp;<i class="fa-solid fa-wifi"></i>
+                            </div>
+                            <div v-if="device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery !== -1" :class="{ 'warning': device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.warning }">
+                                {{ parseInt(device.lorawanSettings?.deviceStatusBattery ?? 0) }}%&nbsp;<i class="fa-solid fa-battery-three-quarters"></i>
+                            </div>
                         </div>
                         {{ device.name }}
                         <!-- <span :class="['device-health', device.status.toLowerCase()]">●</span> -->
@@ -229,7 +233,7 @@
         .status {
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            align-items: flex-end;
             gap: 0.6rem;
             float: right;
             font-size: 0.7rem;
