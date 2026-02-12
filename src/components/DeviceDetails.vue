@@ -119,6 +119,15 @@
                     <span class="detail-label">Type</span>
                     <span class="detail-value">{{ device.type ?? '&nbsp;' }}</span>
                 </div>
+                <div class="detail-item wide">
+                    <div class="copy-button-wrapper">
+                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.location, 'location')">
+                            <i :class="[recentlyCopiedKey === 'location' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                        </div>
+                    </div>
+                    <span class="detail-label">Lokation</span>
+                    <span class="detail-value">{{ device.location ?? '&nbsp;' }}</span>
+                </div>
                 
                 <div class="seperator"></div>
 
@@ -172,6 +181,8 @@
         z-index: 1000;
         margin-top: calc(4.5rem + 3.5rem); /* 4.5 for navbar + 3.5rem for device toolbar */
         padding: 1.2rem 1.5rem;
+        overflow-y: auto;
+        max-height: calc(100vh - (4.5rem + 3.5rem));
     }
     .sidebar button {
         float: right;
@@ -196,19 +207,10 @@
     }
 
 
-
-
-
-
-
-    .device-details:not(:last-child) {
-        margin-bottom: 2rem;
-    }
     .device-details {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
-        margin-bottom: 2rem;
         margin-left: -0.5rem;
         margin-right: -0.5rem;
         /* background-color: #3b3b3b; */
