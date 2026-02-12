@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 import logging
@@ -44,6 +44,27 @@ def get_devices():
         return jsonify({"devices": devices}), 200
     except Exception as e:
         logging.exception("Error fetching devices from OS2Client")
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/api/devices/<int:device_id>", methods=["PATCH"])
+def patch_device(device_id: int):
+    if not os2_client:
+        return jsonify({"error": "OS2Client not initialized"}), 500
+
+    payload = request.get_json(silent=True)
+    if not payload:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    # Ensure the payload contains the id expected by the client library
+    payload["id"] = device_id
+
+    try:
+        result = os2_client.patch_device(payload)
+        return jsonify(result), 200
+    except Exception as e:
+        logging.exception("Error patching device via OS2Client")
         return jsonify({"error": str(e)}), 500
 
 

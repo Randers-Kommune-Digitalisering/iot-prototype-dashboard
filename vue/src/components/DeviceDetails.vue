@@ -3,7 +3,7 @@
     import { useSettings } from '@/settingsStore.js'
     import { formatTimeAgo } from '../helper'
 
-    const emit = defineEmits(['close'])
+    const emit = defineEmits(['close', 'patch'])
     const isVisible = ref(false)
 
     const { state } = useSettings()
@@ -45,6 +45,14 @@
                 console.error('Failed to copy value:', err);
             });
     };
+
+    const editKey = (value, key) => {
+        const newValue = prompt(`Rediger ${key}:`, value)
+        if (newValue !== null) {
+            // Emit an event to the parent component with the updated value and key
+            emit('patch', { key, value: newValue })
+        }
+    }
 </script>
 
 <template>
@@ -64,8 +72,8 @@
             <div class="device-details">
 
                 <div v-if="device.error" class="detail-item error error-message wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.error, 'error')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.error, 'error')">
                             <i :class="[recentlyCopiedKey === 'error' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -85,8 +93,8 @@
                     </span>
                 </div>
                 <div :class="['detail-item', { warning: device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.warning, 'error': device.latestReceivedMessage?.rssi !== undefined && device.latestReceivedMessage?.rssi <= state.values.thresholds.rssi.error }]">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.latestReceivedMessage?.rssi, 'rssi')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.latestReceivedMessage?.rssi, 'rssi')">
                             <i :class="[recentlyCopiedKey === 'rssi' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -95,8 +103,8 @@
                 </div>
                 <div :class="['detail-item', { 'error': device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.error, warning: device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery <= state.values.thresholds.battery.warning }]"
                     v-if="device.lorawanSettings?.deviceStatusBattery !== undefined && device.lorawanSettings?.deviceStatusBattery !== -1">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.lorawanSettings?.deviceStatusBattery, 'battery')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.lorawanSettings?.deviceStatusBattery, 'battery')">
                             <i :class="[recentlyCopiedKey === 'battery' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -107,8 +115,11 @@
                 <div class="seperator"></div>
 
                 <div class="detail-item wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.name, 'name')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="editKey(device.name, 'name')">
+                            <i :class="[recentlyCopiedKey === 'name' ? 'fa-solid fa-edit' : 'fa-regular fa-edit']"></i>
+                        </div>
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.name, 'name')">
                             <i :class="[recentlyCopiedKey === 'name' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -116,8 +127,8 @@
                     <span class="detail-value">{{ device.name ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'type')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'type')">
                             <i :class="[recentlyCopiedKey === 'type' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -125,8 +136,8 @@
                     <span class="detail-value">{{ device.deviceModel?.body?.name ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.commentOnLocation, 'location')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.commentOnLocation, 'location')">
                             <i :class="[recentlyCopiedKey === 'location' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -137,8 +148,8 @@
                 <div class="seperator"></div>
 
                 <div class="detail-item wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.eui, 'eui')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.eui, 'eui')">
                             <i :class="[recentlyCopiedKey === 'eui' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -146,8 +157,8 @@
                     <span class="detail-value">{{ device.deviceEUI ?? '&nbsp;' }}</span>
                 </div>
                 <div class="detail-item wide">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(device.appKey, 'appKey')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.appKey, 'appKey')">
                             <i :class="[recentlyCopiedKey === 'appKey' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -156,8 +167,8 @@
                 </div>
 
                 <div class="detail-item wide" v-if="state.values.developerMode">
-                    <div class="copy-button-wrapper">
-                        <div class="copy-button button" tabindex="-1" @click="copyValueToClipboard(JSON.stringify(device, null, 2), 'json')">
+                    <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(JSON.stringify(device, null, 2), 'json')">
                             <i :class="[recentlyCopiedKey === 'json' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
@@ -272,7 +283,7 @@
         }
 
     
-    .detail-item .copy-button-wrapper {
+    .detail-item .buttons-wrapper {
         position: absolute;
         top: 0rem;
         right: 0rem;
@@ -284,12 +295,13 @@
         padding-right: 0.5rem;
         opacity: 0;
         transition: opacity 0.2s ease;
+        display: flex;
     }
-    .detail-item:hover .copy-button-wrapper {
+    .detail-item:hover .buttons-wrapper {
         opacity: 1;
         pointer-events: all;
     }
-    .detail-item .copy-button {
+    .detail-item .value-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -297,12 +309,12 @@
         width: 3rem;
         background-color: inherit;
     }
-    .detail-item .copy-button:hover {
+    .detail-item .value-button:hover {
         color: #ddd;
         background-color: #6262621c;
     }
-    .detail-item .copy-button:focus,
-    .detail-item .copy-button:focus-visible {
+    .detail-item .value-button:focus,
+    .detail-item .value-button:focus-visible {
         outline: 0;
         border-color: transparent !important;
         background-color: inherit;

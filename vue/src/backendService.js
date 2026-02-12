@@ -53,6 +53,9 @@ class OS2IoTService extends BackendService {
     getDevices() {
         return this._get('/devices');
     }
+    patchDevice(id, data) {
+        return this._patch(`/devices/${id}`, data);
+    }
 }
 
 export default new OS2IoTService();

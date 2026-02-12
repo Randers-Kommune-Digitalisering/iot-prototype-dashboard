@@ -97,11 +97,30 @@
         // console.log('View changed to:', val)
         currentView.value = val
     }
+
+    /* Patch device details */
+    const onDevicePatch = async ({ key, value }) => {
+        if (!selectedDevice.value || !selectedDevice.value.id) return
+        const deviceId = selectedDevice.value.id
+        try {
+            await OS2IoTService.patchDevice(deviceId, { [key]: value })
+            // Update local state after successful update
+            selectedDevice.value[key] = value
+            // Also update the main devices list to reflect changes in the UI
+            const deviceIndex = devices.value.findIndex(d => d.id === deviceId)
+            if (deviceIndex !== -1) {
+                devices.value[deviceIndex][key] = value
+            }
+        } catch (err) {
+            console.error('Failed to update device:', err)
+        }
+    }
+
 </script>
 
 <template>
     <DeviceToolbar @search-changed="onSearchChanged" @view-changed="onViewChanged" />
-    <DeviceDetails ref="deviceDetails" @close="selectedDevice = {}" :device="selectedDevice" />
+    <DeviceDetails ref="deviceDetails" @close="selectedDevice = {}" :device="selectedDevice" @patch="onDevicePatch" />
 
     <div class="content-margin">
 
