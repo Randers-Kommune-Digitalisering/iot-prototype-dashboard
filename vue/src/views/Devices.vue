@@ -38,7 +38,7 @@
             if (!groups[type]) groups[type] = []
             groups[type].push(device)
         })
-        return groups
+        return sortGroups(groups)
     })
 
     const devicesByLocation = computed(() => {

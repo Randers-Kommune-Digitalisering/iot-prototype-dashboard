@@ -129,6 +129,7 @@ class OS2Client(APIClient):
 
         # GET current device state
         current = self._get(f"/iot-device/{device_id}")
+
         # Some endpoints wrap payload in a 'data' key; prefer that if present
         current_payload = current.get("data", current) if isinstance(current, dict) else current
 
@@ -146,6 +147,20 @@ class OS2Client(APIClient):
 
         # Add applicationId to payload
         merged["applicationId"] = self.application_id
+
+        # Move deviceModelId from deviceModel to top-level
+        if "deviceModel" in merged and isinstance(merged["deviceModel"], dict):
+            device_model = merged["deviceModel"]
+            if "id" in device_model:
+                merged["deviceModelId"] = device_model["id"]
+                del merged["deviceModel"]  # Remove nested deviceModel after extracting id
+            else:
+                print(f"deviceModel for device {device_id} does not contain an 'id' field")
+        else:
+            print(f"No valid deviceModel found for device {device_id}; cannot extract deviceModelId")
+
+        # Delete latest data from payload
+        del merged["receivedMessagesMetadata"]
 
         # PUT the merged device back to the same endpoint
         res = self._put(f"/iot-device/{device_id}", json=merged)
