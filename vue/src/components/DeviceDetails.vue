@@ -12,6 +12,14 @@
 
     const nameEditable = ref(null)
     const nameEditableValue = ref('')
+    const onNameInput = (e) => {
+        nameEditableValue.value = e.target.innerText
+    }
+    const locationEditable = ref(null)
+    const locationEditableValue = ref('')
+    const onLocationInput = (e) => {
+        locationEditableValue.value = e.target.innerText
+    }
 
     const { state } = useSettings()
 
@@ -66,6 +74,18 @@
                 } catch (e) {
                     // ignore selection errors
                 }
+            } else if (key === 'commentOnLocation' && locationEditable.value) {
+                locationEditable.value.focus()
+                try {
+                    const range = document.createRange()
+                    range.selectNodeContents(locationEditable.value)
+                    range.collapse(false)
+                    const sel = window.getSelection()
+                    sel.removeAllRanges()
+                    sel.addRange(range)
+                } catch (e) {
+                    // ignore selection errors
+                }
             }
         })
     }
@@ -75,10 +95,6 @@
         isPatching.value = true
         // console.log('Patching key:', key, 'with value:', value)
         emit('patch', { key, value })
-    }
-
-    const onNameInput = (e) => {
-        nameEditableValue.value = e.target.innerText
     }
 
     const cancelEdit = () => {
@@ -229,7 +245,7 @@
 
                 <!-- Location -->
                 <div class="detail-item wide">
-                    <div class="buttons-wrapper">
+                    <div class="buttons-wrapper" v-if="!(isEditing && editingKey === 'commentOnLocation')">
                         <div class="value-button button always-show" tabindex="-1" v-if="isPatching && patchingKey === 'commentOnLocation'">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </div>
@@ -243,7 +259,17 @@
                         </template>
                     </div>
                     <span class="detail-label">Lokation</span>
-                    <span :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
+                    <span class="detail-value" v-if="isEditing && editingKey === 'commentOnLocation'">
+                        <div
+                            ref="locationEditable"
+                            contenteditable="true"
+                            class="edit-input"
+                            @input="onLocationInput"
+                            @keydown.enter.prevent="patchKey('commentOnLocation', locationEditableValue);cancelEdit()"
+                            @blur="cancelEdit()"
+                        >{{ locationEditableValue.value ?? device.commentOnLocation }}</div>
+                    </span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
                 </div>
 
                 <div class="seperator"></div>
