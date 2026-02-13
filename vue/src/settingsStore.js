@@ -3,7 +3,8 @@ import { reactive } from 'vue'
 const defaultSettings = {
   thresholds: {
     battery: { warning: 20, error: 5 },
-    rssi: { warning: -85, error: -100 }
+    rssi: { warning: -85, error: -100 },
+    lastSeen: { warning: 24, offline: 72 } // in hours
   },
   developerMode: true
 }

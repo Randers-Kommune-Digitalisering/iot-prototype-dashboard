@@ -4,7 +4,7 @@
     import DeviceDetails from '@/components/DeviceDetails.vue'
     import { useSettings } from '@/settingsStore.js'
     import OS2IoTService from '@/backendService.js'
-    import { formatTimeAgo, sortGroups } from '../helper'
+    import { formatTimeAgo, timeAgoHours, sortGroups } from '../helper'
 
     const currentView = ref('lokation') // 'lokation' or 'enhedstype'
     const deviceDetails = ref(null)
@@ -133,7 +133,7 @@
                 <div
                     v-for="device in group"
                     :key="device.id"
-                    :class="['device-item', { offline: device.latestReceivedMessage?.sentTime == undefined, selected: selectedDevice && selectedDevice.id === device.id }]"
+                    :class="['device-item', { 'offline': device.latestReceivedMessage?.sentTime == undefined || timeAgoHours(device.latestReceivedMessage?.sentTime) > state.values.thresholds.lastSeen.offline, 'warning': device.latestReceivedMessage?.sentTime !== undefined && timeAgoHours(device.latestReceivedMessage?.sentTime) > state.values.thresholds.lastSeen.warning, 'selected': selectedDevice && selectedDevice.id === device.id }]"
                     @click="showDeviceDetails(device)"
                     >
                     <div class="device-name">
@@ -222,9 +222,9 @@
     .device-item.error {
         background-color: rgb(87, 69, 69);
     }
-    /* .device-item.warning {
+    .device-item.warning {
         background-color: rgb(87, 79, 68);
-    } */
+    }
     .device-item.offline {
         background-color: rgb(69, 69, 77);
     }
@@ -247,10 +247,10 @@
             gap: 0.2rem;
             color: rgb(150, 150, 150);
         }
-            .warning {
+            .status .warning {
                 color: rgb(190, 145, 115) !important;
             }
-            .error {
+            .status .error {
                 color: rgb(190, 115, 115) !important;
             }
 

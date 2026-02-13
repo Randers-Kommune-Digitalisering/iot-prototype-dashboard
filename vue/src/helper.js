@@ -41,6 +41,16 @@ export function formatTimeAgo(dateString) {
     return `${diffYears} år`;
 }
 
+export function timeAgoHours(dateString) {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return null;
+    }
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    return diffHours;
+}
 
 export function sortGroups(groups, sortBy = 'name') {
     const sortedKeys = Object.keys(groups).sort((a, b) => {
@@ -62,5 +72,5 @@ export function sortGroups(groups, sortBy = 'name') {
     return sortedGroups;
 }
 
-export default { formatTimeAgo, sortGroups };
+export default { formatTimeAgo, timeAgoHours, sortGroups };
 // Named exports are used above; no default export.

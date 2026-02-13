@@ -1,7 +1,7 @@
 <script setup>
     import { ref, defineEmits } from 'vue'
     import { useSettings } from '@/settingsStore.js'
-    import { formatTimeAgo } from '../helper'
+    import { formatTimeAgo, timeAgoHours } from '../helper'
 
     const emit = defineEmits(['close', 'patch'])
     const isVisible = ref(false)
@@ -98,8 +98,8 @@
                     <span class="detail-value">{{ device.status ?? 'Ukendt' }}</span>
                 </div> -->
 
-                <!-- Latest data -->
-                <div :class="['detail-item', 'wide', { 'offline': device.latestReceivedMessage === null || device.latestReceivedMessage?.sentTime === undefined }]">
+                <!-- Last seen -->
+                <div :class="['detail-item', 'wide', { 'offline': device.latestReceivedMessage?.sentTime == undefined || timeAgoHours(device.latestReceivedMessage?.sentTime) > state.values.thresholds.lastSeen.offline, 'warning': device.latestReceivedMessage?.sentTime !== undefined && timeAgoHours(device.latestReceivedMessage?.sentTime) > state.values.thresholds.lastSeen.warning }]">
                     <span class="detail-label">Sidst set</span>
                     <span class="detail-value">
                         <template v-if="device.latestReceivedMessage?.sentTime">{{ formatTimeAgo(device.latestReceivedMessage?.sentTime) }} siden</template>
