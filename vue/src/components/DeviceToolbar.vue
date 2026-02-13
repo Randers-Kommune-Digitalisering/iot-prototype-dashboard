@@ -3,6 +3,10 @@
     const emit = defineEmits(['search-changed', 'view-changed'])
     const selectedView = ref('lokation')
     const searchQuery = ref('')
+    const clearSearch = () => {
+        searchQuery.value = ''
+        emit('search-changed', searchQuery.value)
+    }
 </script>
 
 <template>
@@ -15,8 +19,8 @@
                 <span :class="{ active: selectedView === 'lokation' }">Lokation</span>
             </label>
             <label class="toggle-radio">
-                <input type="radio" name="view" value="enhedstype" v-model="selectedView" @change="emit('view-changed', selectedView)" />
-                <span :class="{ active: selectedView === 'enhedstype' }">Enhedstype</span>
+                <input type="radio" name="view" value="model" v-model="selectedView" @change="emit('view-changed', selectedView)" />
+                <span :class="{ active: selectedView === 'model' }">Model</span>
             </label>
         </div>
 
@@ -26,11 +30,14 @@
             Søg
             <input
                 type="text"
-                placeholder="Navn, type eller lokation"
+                placeholder="Navn, model eller lokation"
                 class="device-search"
                 v-model="searchQuery"
                 @input="emit('search-changed', searchQuery)"
             />
+            <button @click="clearSearch()" v-if="searchQuery">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
     </div>
@@ -88,6 +95,10 @@
             color: #222;
             border: 1px solid #fff;
         }
+        .toggle-radio span:not(.active):hover {
+            border-color: #5d5d5d !important;
+            background-color: #262626;
+        }
     .device-search {
         display: flex;
         align-items: center;
@@ -103,5 +114,16 @@
         transition: background 0.2s, color 0.2s, border 0.2s;
         font-size: 1rem;
         box-sizing: border-box;
+    }
+
+    button {
+        border-radius: 50%;
+        width: 2.2rem;
+        height: 2.2rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #444;
+        padding: 0;
     }
 </style>

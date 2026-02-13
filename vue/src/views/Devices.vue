@@ -6,7 +6,7 @@
     import OS2IoTService from '@/backendService.js'
     import { formatTimeAgo, timeAgoHours, sortGroups } from '../helper'
 
-    const currentView = ref('lokation') // 'lokation' or 'enhedstype'
+    const currentView = ref('lokation') // 'lokation' or 'model'
     const deviceDetails = ref(null)
     const selectedDevice = ref({})
 
@@ -53,7 +53,7 @@
     })
 
     const deviceList = computed(() => {
-        return currentView.value === 'enhedstype' ? devicesByType.value : devicesByLocation.value
+        return currentView.value === 'model' ? devicesByType.value : devicesByLocation.value
     })
 
     /* Toggle device details */
@@ -161,7 +161,7 @@
                             <template v-else>Ukendt</template>
                         </div>
                         <div :class="['synced-ento', device.isSyncedWithEnto ? 'synced' : 'not-synced']"><i :class="['fa-solid', 'fa-chart-line', ]"></i> {{ device.isSyncedWithEnto ? 'Seneste data findes i Ento' : 'Data mangler i Ento' }}</div>
-                        <div class="device-model" v-if="currentView !== 'enhedstype'"><i class="fa-solid fa-microchip"></i> {{ device.deviceModel?.body?.name }}</div>
+                        <div class="device-model" v-if="currentView !== 'model'"><i class="fa-solid fa-microchip"></i> {{ device.deviceModel?.body?.name }}</div>
                         <div class="location" v-if="currentView !== 'lokation'"><i class="fa-solid fa-house-chimney"></i> {{ device.commentOnLocation ?? 'Ukendt' }}</div>
                         
                     </div>
