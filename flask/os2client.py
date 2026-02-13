@@ -148,16 +148,17 @@ class OS2Client(APIClient):
         # Add applicationId to payload
         merged["applicationId"] = self.application_id
 
-        # Move deviceModelId from deviceModel to top-level
-        if "deviceModel" in merged and isinstance(merged["deviceModel"], dict):
-            device_model = merged["deviceModel"]
-            if "id" in device_model:
-                merged["deviceModelId"] = device_model["id"]
-                del merged["deviceModel"]  # Remove nested deviceModel after extracting id
+        # Move deviceModelId from deviceModel to top-level if missing
+        if "deviceModelId" not in merged:
+            if "deviceModel" in merged and isinstance(merged["deviceModel"], dict):
+                device_model = merged["deviceModel"]
+                if "id" in device_model:
+                    merged["deviceModelId"] = device_model["id"]
+                    del merged["deviceModel"]  # Remove nested deviceModel after extracting id
+                else:
+                    print(f"deviceModel for device {device_id} does not contain an 'id' field")
             else:
-                print(f"deviceModel for device {device_id} does not contain an 'id' field")
-        else:
-            print(f"No valid deviceModel found for device {device_id}; cannot extract deviceModelId")
+                print(f"No valid deviceModel found for device {device_id}; cannot extract deviceModelId")
 
         # Delete latest data from payload
         del merged["receivedMessagesMetadata"]

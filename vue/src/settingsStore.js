@@ -6,7 +6,8 @@ const defaultSettings = {
     rssi: { warning: -85, error: -100 },
     lastSeen: { warning: 24, offline: 72 } // in hours
   },
-  developerMode: true
+  developerMode: true,
+  deviceModels: [{"id": 5, "name": "Brunata brugsvandsmåler"}, {"id": 6, "name": "Brunata El måler"}]
 }
 
 const state = reactive({

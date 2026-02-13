@@ -7,6 +7,8 @@
     const isVisible = ref(false)
     const isPatching = ref(false)
     const patchingKey = ref(null)
+    const isEditing = ref(false)
+    const editingKey = ref(null)
 
     const { state } = useSettings()
 
@@ -46,12 +48,25 @@
 
     const editKey = (value, key) => {
         const newValue = prompt(`Rediger ${key}:`, value)
-        if (newValue !== null) {
-            // Emit an event to the parent component with the updated value and key
-            patchingKey.value = key
-            isPatching.value = true
-            emit('patch', { key, value: newValue })
-        }
+        if (newValue !== null)
+            patchKey(key, newValue)
+    }
+
+    const patchKey = (key, value) => {
+        patchingKey.value = key
+        isPatching.value = true
+        emit('patch', { key, value })
+    }
+
+    const editKeyDropDown = (key) => {
+        //
+        editingKey.value = key
+        isEditing.value = true
+    }
+
+    const cancelEdit = () => {
+        isEditing.value = false
+        editingKey.value = null
     }
 
     const onKeyEdited = (key, success, message = null) => {
@@ -153,13 +168,38 @@
 
                 <!-- Model -->
                 <div class="detail-item wide">
-                    <div class="buttons-wrapper">
-                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'type')">
-                            <i :class="[recentlyCopiedKey === 'type' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                    <div class="buttons-wrapper" v-if="!isEditing || editingKey !== 'deviceModelId'">
+                        <div class="value-button button always-show" tabindex="-1" v-if="isPatching && patchingKey === 'deviceModelId'">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
                         </div>
+                        <template v-else>
+                            <div class="value-button button" tabindex="-1" @click="editKeyDropDown('deviceModelId')">
+                                <i class="fa-regular fa-edit"></i>
+                            </div>
+                            <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'deviceModelId')">
+                                <i :class="[recentlyCopiedKey === 'deviceModelId' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                            </div>
+                        </template>
                     </div>
                     <span class="detail-label">Model</span>
-                    <span class="detail-value">{{ device.deviceModel?.body?.name ?? '&nbsp;' }}</span>
+                    <span class="detail-value" v-if="isEditing && editingKey === 'deviceModelId'">
+                        <div class="dropdown-wrapper">
+                            <div class="edit-dropdown">
+                                <div class="dropdown-option default" @click="cancelEdit()">
+                                    {{ device.deviceModel?.body?.name ?? 'Ingen' }}
+                                    <span class="current-selection">Nuværende model</span>
+                                </div>
+                                <div class="dropdown-option"
+                                     v-for="model in state.values.deviceModels.filter(model => model.id !== device.deviceModel?.id)"
+                                     :key="model.id"
+                                     @click="patchKey('deviceModelId', model.id);cancelEdit()">
+                                        {{ model.name ?? model.id }}
+                                </div>
+                            </div>
+                        </div>
+                        &nbsp;
+                    </span>
+                    <span class="detail-value" v-else>{{ device.deviceModel?.body?.name ?? '&nbsp;' }}</span>
                 </div>
 
                 <!-- Location -->
@@ -269,8 +309,6 @@
         gap: 0.5rem;
         margin-left: -0.5rem;
         margin-right: -0.5rem;
-        /* background-color: #3b3b3b; */
-        /* border-radius: 0.5rem; */
     }
     .device-details .seperator {
         grid-column: span 2;
@@ -289,6 +327,9 @@
     }
     .device-details .detail-item:hover {
         background-color: #323232;
+    }
+    .device-details .detail-item:has(.dropdown-wrapper) {
+        background-color: #3b3b3b;
     }
     .device-details .detail-item.wide {
         grid-column: span 2;
@@ -358,6 +399,43 @@
         border-color: transparent !important;
         background-color: inherit;
     }
+
+    .dropdown-wrapper {
+        position: absolute;
+        top: 2.3rem;
+        left: 0;
+        right: 0;
+        z-index: 3;
+    }
+    .edit-dropdown {
+        background-color: #3b3b3b;
+        border-bottom-left-radius: 0.4rem;
+        border-bottom-right-radius: 0.4rem;
+        overflow: hidden;
+        width: 100%;
+    }
+    .edit-dropdown .dropdown-option {
+        position: relative;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s;
+        padding-bottom: 1rem;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    .dropdown-option .current-selection {
+        margin-left: 1rem;
+        color:#aaa;
+        font-size:0.8rem;
+        font-weight: 400;
+    }
+    .dropdown-option:not(:first-child) {
+        padding-top: 1rem;
+    }
+    .dropdown-option:hover {
+        background-color: #464646;
+    }
+
 
     .text-faded {
         color: #aaa !important;

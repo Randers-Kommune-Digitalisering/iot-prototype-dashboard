@@ -103,13 +103,20 @@
         if (!selectedDevice.value || !selectedDevice.value.id) return
         const deviceId = selectedDevice.value.id
         try {
-            await OS2IoTService.patchDevice(deviceId, { [key]: value })
+            const response = await OS2IoTService.patchDevice(deviceId, { [key]: value })
             // Update local state after successful update
             selectedDevice.value[key] = value
             // Also update the main devices list to reflect changes in the UI
             const deviceIndex = devices.value.findIndex(d => d.id === deviceId)
             if (deviceIndex !== -1) {
-                devices.value[deviceIndex][key] = value
+                if (key === 'deviceModelId') {
+                    // If device model was changed, we need to update the whole device model object in the devices list
+                    const newModel = response.deviceModel
+                    if (newModel) {
+                        devices.value[deviceIndex]['deviceModel'] = newModel
+                    }
+                } else
+                    devices.value[deviceIndex][key] = value
             }
             deviceDetails.value.onKeyEdited(key, true)
         } catch (err) {
