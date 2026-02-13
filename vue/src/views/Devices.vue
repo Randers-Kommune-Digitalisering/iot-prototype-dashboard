@@ -78,8 +78,9 @@
             const matchedDevices = devs.filter(device => {
                 const name = (device.name || '').toLowerCase()
                 const location = (device.commentOnLocation || '').toLowerCase()
-                const type = (device.deviceModel?.body?.name || '').toLowerCase()
-                return name.includes(q) || location.includes(q) || type.includes(q)
+                const model = (device.deviceModel?.body?.name || '').toLowerCase()
+                const eui = (device.deviceEUI || '').toLowerCase()
+                return name.includes(q) || location.includes(q) || model.includes(q) || eui.includes(q)
             })
             if (matchedDevices.length > 0) {
                 filteredList[group] = matchedDevices

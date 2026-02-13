@@ -30,7 +30,7 @@
             Søg
             <input
                 type="text"
-                placeholder="Navn, model eller lokation"
+                placeholder="Navn, model, lokation, EUI"
                 class="device-search"
                 v-model="searchQuery"
                 @input="emit('search-changed', searchQuery)"

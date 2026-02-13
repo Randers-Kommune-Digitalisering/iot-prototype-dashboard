@@ -226,7 +226,7 @@
                 <!-- EUI -->
                 <div class="detail-item wide">
                     <div class="buttons-wrapper">
-                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.eui, 'eui')">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceEUI, 'eui')">
                             <i :class="[recentlyCopiedKey === 'eui' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>
