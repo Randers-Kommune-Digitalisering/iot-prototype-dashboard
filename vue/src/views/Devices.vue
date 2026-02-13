@@ -111,8 +111,10 @@
             if (deviceIndex !== -1) {
                 devices.value[deviceIndex][key] = value
             }
+            deviceDetails.value.onKeyEdited(key, true)
         } catch (err) {
             console.error('Failed to update device:', err)
+            deviceDetails.value.onKeyEdited(key, false, 'Opdatering mislykkedes')
         }
     }
 
