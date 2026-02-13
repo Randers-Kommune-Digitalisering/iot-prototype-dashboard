@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, defineEmits } from 'vue'
+    import { ref, defineEmits, nextTick } from 'vue'
     import { useSettings } from '@/settingsStore.js'
     import { formatTimeAgo, timeAgoHours } from '../helper'
 
@@ -9,6 +9,9 @@
     const patchingKey = ref(null)
     const isEditing = ref(false)
     const editingKey = ref(null)
+
+    const nameEditable = ref(null)
+    const nameEditableValue = ref('')
 
     const { state } = useSettings()
 
@@ -46,22 +49,36 @@
             })
     }
 
-    const editKey = (value, key) => {
-        const newValue = prompt(`Rediger ${key}:`, value)
-        if (newValue !== null)
-            patchKey(key, newValue)
+    
+    const editKey = (key) => {
+        editingKey.value = key
+        isEditing.value = true
+        nextTick(() => {
+            if (key === 'name' && nameEditable.value) {
+                nameEditable.value.focus()
+                try {
+                    const range = document.createRange()
+                    range.selectNodeContents(nameEditable.value)
+                    range.collapse(false)
+                    const sel = window.getSelection()
+                    sel.removeAllRanges()
+                    sel.addRange(range)
+                } catch (e) {
+                    // ignore selection errors
+                }
+            }
+        })
     }
 
     const patchKey = (key, value) => {
         patchingKey.value = key
         isPatching.value = true
+        // console.log('Patching key:', key, 'with value:', value)
         emit('patch', { key, value })
     }
 
-    const editKeyDropDown = (key) => {
-        //
-        editingKey.value = key
-        isEditing.value = true
+    const onNameInput = (e) => {
+        nameEditableValue.value = e.target.innerText
     }
 
     const cancelEdit = () => {
@@ -70,7 +87,7 @@
     }
 
     const onKeyEdited = (key, success, message = null) => {
-        console.log('Key edited:', key, success, message)
+        // console.log('Key edited:', key, success, message)
         isPatching.value = false
         patchingKey.value = null
     }
@@ -149,12 +166,12 @@
 
                 <!-- Name -->
                 <div class="detail-item wide">
-                    <div class="buttons-wrapper">
+                    <div class="buttons-wrapper" v-if="!(isEditing && editingKey === 'name')">
                         <div class="value-button button always-show" tabindex="-1" v-if="isPatching && patchingKey === 'name'">
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </div>
                         <template v-else>
-                            <div class="value-button button" tabindex="-1" @click="editKey(device.name, 'name')">
+                            <div class="value-button button" tabindex="-1" @click="editKey('name')">
                                 <i class="fa-regular fa-edit"></i>
                             </div>
                             <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.name, 'name')">
@@ -163,7 +180,15 @@
                         </template>
                     </div>
                     <span class="detail-label">Navn</span>
-                    <span :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'name' }]">{{ device.name ?? '&nbsp;' }}</span>
+                    <span class="detail-value" v-if="isEditing && editingKey === 'name'">
+                        <div ref="nameEditable"
+                             contenteditable="true"
+                             class="edit-input"
+                             @input="onNameInput"
+                             @keydown.enter.prevent="patchKey('name', nameEditableValue);cancelEdit()"
+                             @blur="cancelEdit()">{{ nameEditableValue.value ?? device.name }}</div>
+                    </span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'name' }]">{{ device.name ?? '&nbsp;' }}</span>
                 </div>
 
                 <!-- Model -->
@@ -173,7 +198,7 @@
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </div>
                         <template v-else>
-                            <div class="value-button button" tabindex="-1" @click="editKeyDropDown('deviceModelId')">
+                            <div class="value-button button" tabindex="-1" @click="editKey('deviceModelId')">
                                 <i class="fa-regular fa-edit"></i>
                             </div>
                             <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.deviceModel?.body?.name, 'deviceModelId')">
@@ -209,7 +234,7 @@
                             <i class="fa-solid fa-spinner fa-spin"></i>
                         </div>
                         <template v-else>
-                            <div class="value-button button" tabindex="-1" @click="editKey(device.commentOnLocation, 'commentOnLocation')">
+                            <div class="value-button button" tabindex="-1" @click="editKey('commentOnLocation')">
                                 <i class="fa-regular fa-edit"></i>
                             </div>
                             <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.commentOnLocation, 'location')">
@@ -218,7 +243,7 @@
                         </template>
                     </div>
                     <span class="detail-label">Lokation</span>
-                    <span :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'location' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
+                    <span :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
                 </div>
 
                 <div class="seperator"></div>
@@ -328,8 +353,8 @@
     .device-details .detail-item:hover {
         background-color: #323232;
     }
-    .device-details .detail-item:has(.dropdown-wrapper) {
-        background-color: #3b3b3b;
+    .device-details .detail-item:has(.dropdown-wrapper), .detail-item:has(.edit-input) {
+        background-color: #3b3b3b !important;
     }
     .device-details .detail-item.wide {
         grid-column: span 2;
@@ -398,6 +423,12 @@
         outline: 0;
         border-color: transparent !important;
         background-color: inherit;
+    }
+    
+    .edit-input {
+        outline: none;
+        width: 100%;
+        box-shadow: 0 1px 0 #464646;
     }
 
     .dropdown-wrapper {
