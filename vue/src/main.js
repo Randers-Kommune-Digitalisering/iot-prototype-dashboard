@@ -3,6 +3,7 @@ import '@/assets/style.css';
 import App from './App.vue';
 import router from './router';
 import { useSettings } from '@/settingsStore.js';
+import plainTextDirective from './plainTextDirective.js';
 
 (async () => {
 	const { loadSettingsFromServer } = useSettings()
@@ -11,5 +12,8 @@ import { useSettings } from '@/settingsStore.js';
 
 	const app = createApp(App);
 	app.use(router);
+
+	// register global directive for plain-text contenteditable
+	app.directive('plain-text', plainTextDirective);
 	app.mount('#app');
 })();

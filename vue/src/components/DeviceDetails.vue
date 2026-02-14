@@ -196,12 +196,12 @@
                     </div>
                     <span class="detail-label">Navn</span>
                     <span class="detail-value" v-if="isEditing && editingKey === 'name'">
-                        <div ref="nameEditable"
-                             contenteditable="true"
-                             class="edit-input"
-                             @input="onNameInput"
-                             @keydown.enter.prevent="patchKey('name', nameEditableValue);cancelEdit()"
-                             @blur="cancelEdit()">{{ nameEditableValue.value ?? device.name }}</div>
+                            <div ref="nameEditable"
+                                v-plain-text
+                                class="edit-input"
+                                @input="onNameInput"
+                                @keydown.enter.prevent="patchKey('name', nameEditableValue);cancelEdit()"
+                                @blur="cancelEdit()">{{ nameEditableValue.value ?? device.name }}</div>
                     </span>
                     <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'name' }]">{{ device.name ?? '&nbsp;' }}</span>
                 </div>
@@ -261,7 +261,7 @@
                     <span class="detail-value" v-if="isEditing && editingKey === 'commentOnLocation'">
                         <div
                             ref="locationEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onLocationInput"
                             @keydown.enter.prevent="patchKey('commentOnLocation', locationEditableValue);cancelEdit()"
@@ -290,7 +290,7 @@
                     <span class="detail-value" v-if="isEditing && editingKey === 'comment'">
                         <div
                             ref="commentEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onCommentInput"
                             @keydown.enter.prevent="patchKey('comment', commentEditableValue);cancelEdit()"

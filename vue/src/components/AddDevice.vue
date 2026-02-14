@@ -154,7 +154,7 @@
                     <span class="detail-label">Navn</span>
                     <span class="detail-value">
                                 <div ref="nameEditable"
-                                    contenteditable="true"
+                                    v-plain-text
                                     class="edit-input"
                                     @input="onNameInput"
                                     @keydown.enter.prevent=""></div>
@@ -193,7 +193,7 @@
                     <span class="detail-value">
                         <div
                             ref="euiEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onEuiInput"
                             @keydown.enter.prevent=""
@@ -207,7 +207,7 @@
                     <span class="detail-value">
                         <div
                             ref="appKeyEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onAppKeyInput"
                             @keydown.enter.prevent=""
@@ -223,7 +223,7 @@
                     <span class="detail-value">
                         <div
                             ref="locationEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onLocationInput"
                             @keydown.enter.prevent=""
@@ -237,7 +237,7 @@
                     <span class="detail-value">
                         <div
                             ref="commentEditable"
-                            contenteditable="true"
+                            v-plain-text
                             class="edit-input"
                             @input="onCommentInput"
                             @keydown.enter.prevent=""
