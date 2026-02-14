@@ -4,6 +4,7 @@ import os
 import logging
 from config import OS2_API_BASE_URL, OS2_APPLICATION_ID, OS2_API_KEY, OS2_VERIFY
 from os2client import OS2Client
+import time
 
 app = Flask(__name__)
 
@@ -46,8 +47,6 @@ def get_devices():
         logging.exception("Error fetching devices from OS2Client")
         return jsonify({"error": str(e)}), 500
 
-
-
 @app.route("/api/devices/<int:device_id>", methods=["PATCH"])
 def patch_device(device_id: int):
     if not os2_client:
@@ -67,6 +66,22 @@ def patch_device(device_id: int):
         logging.exception("Error patching device via OS2Client")
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/devices", methods=["POST"])
+def add_device():
+    return request.get_json(silent=True) or {}, 201
+    if not os2_client:
+        return jsonify({"error": "OS2Client not initialized"}), 500
+
+    payload = request.get_json(silent=True)
+    if not payload:
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
+
+    try:
+        result = os2_client.add_device(payload)
+        return jsonify(result), 201
+    except Exception as e:
+        logging.exception("Error adding device via OS2Client")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

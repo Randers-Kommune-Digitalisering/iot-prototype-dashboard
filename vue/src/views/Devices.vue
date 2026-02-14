@@ -7,6 +7,7 @@
     import { formatTimeAgo, timeAgoHours, sortGroups } from '../helper'
 
     const currentView = ref('lokation') // 'lokation' or 'model'
+    const deviceToolbar = ref(null)
     const deviceDetails = ref(null)
     const selectedDevice = ref({})
 
@@ -129,10 +130,26 @@
         }
     }
 
+    const onAddDevice = async (device) => {
+        try {
+            const response = await OS2IoTService.addDevice(device)
+            if (response.error) {
+                throw new Error(response.error)
+            }
+            console.log('Device added successfully:', response)
+            deviceToolbar.value.onDeviceAdded({ ...device, ...response })
+            // devices.value.push(response) // Assuming the response contains the newly created device object
+            // showDeviceDetails(device)
+        } catch (err) {
+            console.error('Failed to add device:', err)
+            deviceToolbar.value.onDeviceAdded({ ...device, 'error': err.message })
+        }
+    }
+
 </script>
 
 <template>
-    <DeviceToolbar @search-changed="onSearchChanged" @view-changed="onViewChanged" />
+    <DeviceToolbar ref="deviceToolbar" @search-changed="onSearchChanged" @view-changed="onViewChanged" @add-device="onAddDevice" />
     <DeviceDetails ref="deviceDetails" @close="selectedDevice = {}" :device="selectedDevice" @patch="onDevicePatch" />
 
     <div class="content-margin">

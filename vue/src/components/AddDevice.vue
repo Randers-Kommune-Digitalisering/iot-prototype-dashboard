@@ -1,12 +1,12 @@
 <script setup>
     import { nextTick, ref, computed } from 'vue'
     import { useSettings } from '@/settingsStore.js'
+    import { toStringOrNull } from '../helper'
 
     const { state } = useSettings()
-
-    defineEmits(['device-added'])
-
+    const emit = defineEmits(['device-added'])
     const isVisible = ref(false)
+
     function closeAddDevice() {
         // Close the overlay and reset the draft values
         device.value = { ...newDevice }
@@ -25,12 +25,12 @@
         name: '',
         devEUI: '',
         OTAAapplicationKey: '',
-        deviceModelId: '',
-        commentOnLocation: '',
         deviceModelId: null,
+        commentOnLocation: '',
         comment: ''
     }
     const device = ref({ ...newDevice })
+    const latestRegisteredDevices = ref([])
 
     const nameEditable = ref(null)
     const nameEditableValue = ref('')
@@ -68,6 +68,7 @@
         // Preserve existing `device.value`
         // Populate the editable refs from the current device values so the
         // contenteditable fields show the last-entered draft.
+        console.log('Opening Add Device with current device state:', JSON.parse(JSON.stringify(device.value)))
         nameEditableValue.value = device.value.name || ''
         euiEditableValue.value = device.value.devEUI || ''
         appKeyEditableValue.value = device.value.OTAAapplicationKey || ''
@@ -83,6 +84,7 @@
             if (appKeyEditable.value) appKeyEditable.value.innerText = appKeyEditableValue.value
             if (locationEditable.value) locationEditable.value.innerText = locationEditableValue.value
             if (commentEditable.value) commentEditable.value.innerText = commentEditableValue.value
+            focusNameInput()
         })
     }
     function focusNameInput() {
@@ -100,28 +102,66 @@
     const isValid = computed(() => Object.values(keyValidity.value).every(Boolean))
     const hasValidationError = ref(false)
     const errorMessage = ref('')
+    const isAwaitingResponse = ref(false)
 
     function addDevice() {
-        
-        errorMessage.value = 'Der opstod en fejl under registreringen. Prøv igen senere.'
-        return
-
         // Use reactive computed validity
-        if (!isValid.value) {
-            // If any required field is invalid, do not proceed
-            hasValidationError.value = true
-            return
-        }
-        
+        // if (!isValid.value) {
+        //     // If any required field is invalid, do not proceed
+        //     hasValidationError.value = true
+        //     return
+        // }
         errorMessage.value = ''
-        // Emit event to parent component with new device details
-        // emit('device-added', { ...device.value })
 
-        // Show awaiting state
+        // Emit event to parent component with new device details
+        emit('device-added', { ...device.value })
+        isAwaitingResponse.value = true
+    }
+
+    const onDeviceAdded = (addedDevice) => {
+        console.log('Device event triggered successfully:', JSON.parse(JSON.stringify(addedDevice)))
+        isAwaitingResponse.value = false
+
+            // In case of error, repopulate editable fields
+            if (addedDevice.error) {
+                nextTick(() => {
+                    errorMessage.value = addedDevice.error
+                    if (nameEditable.value) nameEditable.value.innerText = nameEditableValue.value
+                    if (euiEditable.value) euiEditable.value.innerText = euiEditableValue.value
+                    if (appKeyEditable.value) appKeyEditable.value.innerText = appKeyEditableValue.value
+                    if (locationEditable.value) locationEditable.value.innerText = locationEditableValue.value
+                    if (commentEditable.value) commentEditable.value.innerText = commentEditableValue.value
+                })
+
+            // If successful, show success message
+            // and clear fields for next entry
+            } else {
+                latestRegisteredDevices.value.push({ ...addedDevice })
+                setTimeout(() => {
+                    latestRegisteredDevices.value.shift()
+                }, 10000)
+                nextTick(() => {
+                    device.value = { ...newDevice }
+                    console.log('Device reset for next entry:', JSON.parse(JSON.stringify(device.value)))
+                    nameEditableValue.value = ''
+                    euiEditableValue.value = ''
+                    appKeyEditableValue.value = ''
+                    locationEditableValue.value = ''
+                    commentEditableValue.value = ''
+                    nextTick(() => {
+                        if (nameEditable.value) nameEditable.value.innerText = ''
+                        if (euiEditable.value) euiEditable.value.innerText = ''
+                        if (appKeyEditable.value) appKeyEditable.value.innerText = ''
+                        if (locationEditable.value) locationEditable.value.innerText = ''
+                        if (commentEditable.value) commentEditable.value.innerText = ''
+                    })
+                })
+            }
+
     }
 
     defineExpose({
-        openAddDevice
+        openAddDevice, onDeviceAdded
     })
 </script>
 
@@ -149,20 +189,40 @@
                     <span class="detail-value">{{ errorMessage }}</span>
                 </div>
 
+                <!-- Success message -->
+                <div class="detail-item wide device-added-success"
+                    v-if="latestRegisteredDevices.length && !errorMessage && !isAwaitingResponse"
+                    v-for="device in latestRegisteredDevices"
+                    :key="device.id">
+                    <div class="detail-label">
+                        <i class="fa-solid fa-check"></i>
+                        <span style="font-weight: 500;">{{ device.name }}</span> blev registreret
+                        <template  v-if="device.deviceModelId">
+                            som
+                            <span style="color:rgb(123, 136, 171);">
+                                {{ state.values.deviceModels.find(model => model.id === device.deviceModelId)?.name ?? device.deviceModelId }}
+                            </span>
+                        </template>
+                    </div>
+                </div>
+
                 <!-- Name -->
                 <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.name }]">
                     <span class="detail-label">Navn</span>
                     <span class="detail-value">
-                                <div ref="nameEditable"
+                                <div
+                                    v-if="!isAwaitingResponse"
+                                    ref="nameEditable"
                                     v-plain-text
                                     class="edit-input"
                                     @input="onNameInput"
                                     @keydown.enter.prevent=""></div>
+                                <span v-else>{{ toStringOrNull(device.name) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 
                 <!-- Model -->
-                <div class="detail-item wide" @click="isEditingModel = true" style="cursor: pointer;">
+                <div class="detail-item wide" @click="isEditingModel = true" :style="isAwaitingResponse ? { cursor: 'default', pointerEvents: 'none' } : { cursor: 'pointer' }">
                     <span class="detail-label">Model</span>
                     <span class="detail-value" v-if="isEditingModel">
                         <div class="dropdown-wrapper" @click.stop>
@@ -192,12 +252,14 @@
                     <span class="detail-label">EUI</span>
                     <span class="detail-value">
                         <div
+                            v-if="!isAwaitingResponse"
                             ref="euiEditable"
                             v-plain-text
                             class="edit-input"
                             @input="onEuiInput"
                             @keydown.enter.prevent=""
                         ></div>
+                        <span v-else>{{ toStringOrNull(device.devEUI) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 
@@ -206,12 +268,14 @@
                     <span class="detail-label">AppKey</span>
                     <span class="detail-value">
                         <div
+                            v-if="!isAwaitingResponse"
                             ref="appKeyEditable"
                             v-plain-text
                             class="edit-input"
                             @input="onAppKeyInput"
                             @keydown.enter.prevent=""
                         ></div>
+                        <span v-else>{{ toStringOrNull(device.OTAAapplicationKey) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 
@@ -222,12 +286,14 @@
                     <span class="detail-label">Lokation</span>
                     <span class="detail-value">
                         <div
+                            v-if="!isAwaitingResponse"
                             ref="locationEditable"
                             v-plain-text
                             class="edit-input"
                             @input="onLocationInput"
                             @keydown.enter.prevent=""
                         ></div>
+                        <span v-else>{{ toStringOrNull(device.commentOnLocation) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 
@@ -236,20 +302,24 @@
                     <span class="detail-label">Kommentar</span>
                     <span class="detail-value">
                         <div
+                            v-if="!isAwaitingResponse"
                             ref="commentEditable"
                             v-plain-text
                             class="edit-input"
                             @input="onCommentInput"
                             @keydown.enter.prevent=""
                         ></div>
+                        <span v-else>{{ toStringOrNull(device.comment) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 
             </div>
 
             <div class="button-wrapper">
-                <button class="primary" style="margin-top: 1rem;" @click="addDevice()">
-                    <i class="fa-solid fa-check"></i> Registrér enhed
+                <button class="primary" style="margin-top: 1rem;" @click="addDevice()" :disabled="isAwaitingResponse">
+                    <i class="fa-solid fa-plus" v-if="!isAwaitingResponse"></i>
+                    <div class="fa-spinner-wrapper" v-else><i class="fa-solid fa-spinner fa-spin"></i></div>
+                    <span>Registrér enhed</span>
                 </button>
             </div>
 
@@ -309,14 +379,31 @@
 button:not(.close-button) {
     padding: 0.8rem 1.6rem; 
     font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
-button:not(.close-button) i {
+button:not(.close-button) > i {
     transform: translateX(-0.4rem);
     margin-right: 0.2rem;
+}
+button > span {
+    display: inline-block;
+    transform: translateY(-0.1rem);
 }
 
 .error-message {
     margin-bottom: 1rem;
+}
+.fa-spinner-wrapper {
+    transform: translateX(-0.4rem);
+    margin-right: 0.2rem;
+}
+
+.device-added-success i.fa-check {
+    color: #4BB543;
+    margin-right: 0.6rem;
+    transform: translateY(0.05rem);
 }
 
 </style>

@@ -2,7 +2,7 @@
     import { ref } from 'vue'
     import AddDevice from '@/components/AddDevice.vue'
 
-    const emit = defineEmits(['search-changed', 'view-changed'])
+    const emit = defineEmits(['search-changed', 'view-changed', 'add-device'])
     const selectedView = ref('lokation')
     const searchQuery = ref('')
     const clearSearch = () => {
@@ -11,10 +11,22 @@
     }
 
     const addDevice = ref(null)
+
+    const onAddDevice = (device) => {
+        emit('add-device', device)
+    }
+
+    const onDeviceAdded = (device) => {
+        addDevice.value.onDeviceAdded(device)
+    }
+
+    defineExpose({
+        onDeviceAdded
+    })
 </script>
 
 <template>
-    <AddDevice ref="addDevice" />
+    <AddDevice ref="addDevice" @device-added="onAddDevice" />
     <div class="device-toolbar">
 
         <div class="device-view">
