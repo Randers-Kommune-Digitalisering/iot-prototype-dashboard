@@ -20,6 +20,11 @@
     const onLocationInput = (e) => {
         locationEditableValue.value = e.target.innerText
     }
+    const commentEditable = ref(null)
+    const commentEditableValue = ref('')
+    const onCommentInput = (e) => {
+        commentEditableValue.value = e.target.innerText
+    }
 
     const { state } = useSettings()
 
@@ -270,6 +275,35 @@
                         >{{ locationEditableValue.value ?? device.commentOnLocation }}</div>
                     </span>
                     <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
+                </div>
+
+                <!-- Comment -->
+                <div class="detail-item wide">
+                    <div class="buttons-wrapper" v-if="!(isEditing && editingKey === 'comment')">
+                        <div class="value-button button always-show" tabindex="-1" v-if="isPatching && patchingKey === 'comment'">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                        </div>
+                        <template v-else>
+                            <div class="value-button button" tabindex="-1" @click="editKey('comment')">
+                                <i class="fa-regular fa-edit"></i>
+                            </div>
+                            <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.comment, 'comment')">
+                                <i :class="[recentlyCopiedKey === 'comment' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                            </div>
+                        </template>
+                    </div>
+                    <span class="detail-label">Kommentar</span>
+                    <span class="detail-value" v-if="isEditing && editingKey === 'comment'">
+                        <div
+                            ref="commentEditable"
+                            contenteditable="true"
+                            class="edit-input"
+                            @input="onCommentInput"
+                            @keydown.enter.prevent="patchKey('comment', commentEditableValue);cancelEdit()"
+                            @blur="cancelEdit()"
+                        >{{ commentEditableValue.value ?? device.comment }}</div>
+                    </span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'comment' }]">{{ device.comment == "" || device.comment == "\n" ? '&nbsp;' : device.comment }}</span>
                 </div>
 
                 <div class="seperator"></div>
