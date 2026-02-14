@@ -56,6 +56,7 @@
         return currentView.value === 'model' ? devicesByType.value : devicesByLocation.value
     })
 
+
     /* Toggle device details */
 
     const showDeviceDetails = (device) => {
@@ -99,7 +100,9 @@
         currentView.value = val
     }
 
+
     /* Patch device details */
+
     const onDevicePatch = async ({ key, value }) => {
         if (!selectedDevice.value || !selectedDevice.value.id) return
         const deviceId = selectedDevice.value.id

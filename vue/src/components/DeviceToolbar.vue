@@ -35,8 +35,17 @@
                 v-model="searchQuery"
                 @input="emit('search-changed', searchQuery)"
             />
-            <button @click="clearSearch()" v-if="searchQuery">
+            <button @click="clearSearch()" class="clear-button" :disabled="!searchQuery">
                 <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+        <div class="break"></div>
+        
+        <div class="device-management">
+            <button title="Tilføj enhed">
+                <i class="fa-solid fa-plus"></i> Registrér enhed
             </button>
         </div>
 
@@ -117,13 +126,21 @@
     }
 
     button {
-        border-radius: 50%;
-        width: 2.2rem;
-        height: 2.2rem;
+        border: 1px solid #444;
+        font-weight: 400;
+    }
+    .clear-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid #444;
+        border-radius: 50%;
+        width: 2.2rem;
+        height: 2.2rem;
         padding: 0;
+    }
+    button:not(.clear-button) i {
+        transform: translateX(-0.4rem);
+        margin-right: 0.2rem;
+        font-size: 0.9rem;
     }
 </style>

@@ -2,6 +2,8 @@ import requests
 import urllib3
 from typing import Optional, Dict, Any
 
+from flask.config import OS2_DEVICE_PROFILE_ID
+
 class APIClient:
     def __init__(self, base_url: str, x_api_key: str | None = None, verify: bool | str = True):
         """Initialize the API client with a base URL.
@@ -119,7 +121,7 @@ class OS2Client(APIClient):
         """
         if not isinstance(device, dict):
             raise TypeError("device must be a dict")
-        
+
         required_keys = {"id"}
 
         if any(key not in device for key in required_keys):
@@ -127,25 +129,20 @@ class OS2Client(APIClient):
 
         device_id = device["id"]
 
-        # GET current device state
-        current = self._get(f"/iot-device/{device_id}")
-
-        # Some endpoints wrap payload in a 'data' key; prefer that if present
-        current_payload = current.get("data", current) if isinstance(current, dict) else current
-
+        # GET current device values
+        current_payload = self._get(f"/iot-device/{device_id}")
+    
         if not isinstance(current_payload, dict):
-            # If we don't have a dict to merge into, just use the provided device
-            merged = dict(device)
-        else:
-            merged = dict(current_payload)
-            # Overwrite with provided values
-            merged.update(device)
+            # Device not found, raise error
+            raise ValueError(f"Device with ID {device_id} was not found or OS2IoT API returned invalid data: {current_payload}")
 
-        # Ensure the identifier is present in the payload
+        # Overwrite with provided values
+        merged = dict(current_payload)
+        merged.update(device)
+
+        # Check id and add applicationId
         if "id" not in merged:
             merged["id"] = device_id
-
-        # Add applicationId to payload
         merged["applicationId"] = self.application_id
 
         # Move deviceModelId from deviceModel to top-level if missing
@@ -165,4 +162,35 @@ class OS2Client(APIClient):
 
         # PUT the merged device back to the same endpoint
         res = self._put(f"/iot-device/{device_id}", json=merged)
+        return res
+
+    def create_device(self, device: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new device.
+
+        This method will POST the `device` payload to
+        `/application/{application_id}/iot-device` and return the response.
+        """
+        if not isinstance(device, dict):
+            raise TypeError("device must be a dict")
+        
+        required_keys = {"name", "OTAAapplicationKey", "deviceEUI"}
+
+        if any(key not in device for key in required_keys):
+            raise ValueError("device dict must include the following keys: " + ", ".join(required_keys))
+
+        # Build payload
+        device["applicationId"] = self.application_id
+        device["type"] = "LORAWAN"
+        device["lorawanSettings"] = {
+            "activationType": "OTAA",
+            "devEUI": device["deviceEUI"],
+            "OTAAapplicationKey": device["OTAAapplicationKey"],
+            "skipFCntCheck": False,
+            "isDisabled": False,
+            "deviceProfileID": OS2_DEVICE_PROFILE_ID
+        }
+        device["comment"] = device.get("comment", "")
+        device["commentOnLocation"] = device.get("commentOnLocation", "")
+
+        res = self._post(f"/application/{self.application_id}/iot-device", json=device)
         return res
