@@ -6,33 +6,6 @@
 
     defineEmits(['device-added'])
 
-    const nameEditable = ref(null)
-    const nameEditableValue = ref('')
-    const onNameInput = (e) => {
-        nameEditableValue.value = e.target.innerText
-    }
-    const locationEditable = ref(null)
-    const locationEditableValue = ref('')
-    const onLocationInput = (e) => {
-        locationEditableValue.value = e.target.innerText
-    }
-    const commentEditable = ref(null)
-    const commentEditableValue = ref('')
-    const onCommentInput = (e) => {
-        commentEditableValue.value = e.target.innerText
-    }
-    const euiEditable = ref(null)
-    const euiEditableValue = ref('')
-    const onEuiInput = (e) => {
-        euiEditableValue.value = e.target.innerText
-    }
-    const appKeyEditable = ref(null)
-    const appKeyEditableValue = ref('')
-    const onAppKeyInput = (e) => {
-        appKeyEditableValue.value = e.target.innerText
-    }
-    const isEditingModel = ref(false)
-
     const isVisible = ref(false)
     const newDevice = {
         name: '',
@@ -45,13 +18,69 @@
     }
     const device = ref({ ...newDevice })
 
+    const nameEditable = ref(null)
+    const nameEditableValue = ref('')
+    const onNameInput = (e) => {
+        nameEditableValue.value = e.target.innerText
+        device.value.name = nameEditableValue.value
+    }
+    const locationEditable = ref(null)
+    const locationEditableValue = ref('')
+    const onLocationInput = (e) => {
+        locationEditableValue.value = e.target.innerText
+        device.value.commentOnLocation = locationEditableValue.value
+    }
+    const commentEditable = ref(null)
+    const commentEditableValue = ref('')
+    const onCommentInput = (e) => {
+        commentEditableValue.value = e.target.innerText
+        device.value.comment = commentEditableValue.value
+    }
+    const euiEditable = ref(null)
+    const euiEditableValue = ref('')
+    const onEuiInput = (e) => {
+        euiEditableValue.value = e.target.innerText
+        device.value.devEUI = euiEditableValue.value
+    }
+    const appKeyEditable = ref(null)
+    const appKeyEditableValue = ref('')
+    const onAppKeyInput = (e) => {
+        appKeyEditableValue.value = e.target.innerText
+        device.value.OTAAapplicationKey = appKeyEditableValue.value
+    }
+    const isEditingModel = ref(false)
+
     const openAddDevice = () => {
-        // device.value = { ...newDevice }
+        // Preserve existing `device.value`
+        // Populate the editable refs from the current device values so the
+        // contenteditable fields show the last-entered draft.
+        nameEditableValue.value = device.value.name || ''
+        euiEditableValue.value = device.value.devEUI || ''
+        appKeyEditableValue.value = device.value.OTAAapplicationKey || ''
+        locationEditableValue.value = device.value.commentOnLocation || ''
+        commentEditableValue.value = device.value.comment || ''
+
         isVisible.value = true
 
         nextTick(() => {
-            focusNameInput()
+            // ensure DOM updated (for contenteditable fields)
+            if (nameEditable.value) nameEditable.value.innerText = nameEditableValue.value
+            if (euiEditable.value) euiEditable.value.innerText = euiEditableValue.value
+            if (appKeyEditable.value) appKeyEditable.value.innerText = appKeyEditableValue.value
+            if (locationEditable.value) locationEditable.value.innerText = locationEditableValue.value
+            if (commentEditable.value) commentEditable.value.innerText = commentEditableValue.value
         })
+    }
+
+    function closeAddDevice() {
+        // Close the overlay and reset the draft values
+        device.value = { ...newDevice }
+        isVisible.value = false
+    }
+
+    function overlayClick() {
+        // Close overlay on background click but do NOT reset values — preserve draft.
+        isVisible.value = false
     }
 
     function focusNameInput() {
@@ -76,10 +105,10 @@
 
 <template>
 
-    <div class="add-device-overlay" v-if="isVisible" @click="isVisible = device == newDevice ? false : isVisible">
+    <div class="add-device-overlay" v-if="isVisible" @click="overlayClick">
 
         <div class="add-device-body" @click.stop>
-            <button @click="isVisible = false" class="close-button">
+            <button @click="closeAddDevice" class="close-button">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -91,11 +120,11 @@
                 <div class="detail-item wide">
                     <span class="detail-label">Navn</span>
                     <span class="detail-value">
-                        <div ref="nameEditable"
-                             contenteditable="true"
-                             class="edit-input"
-                             @input="onNameInput"
-                             @keydown.enter.prevent="">{{ nameEditableValue.value ?? device.name }}</div>
+                                <div ref="nameEditable"
+                                    contenteditable="true"
+                                    class="edit-input"
+                                    @input="onNameInput"
+                                    @keydown.enter.prevent=""></div>
                     </span>
                 </div>
 
@@ -135,7 +164,7 @@
                             class="edit-input"
                             @input="onEuiInput"
                             @keydown.enter.prevent=""
-                        >{{ euiEditableValue.value ?? device.deviceEUI }}</div>
+                        ></div>
                     </span>
                 </div>
 
@@ -149,7 +178,7 @@
                             class="edit-input"
                             @input="onAppKeyInput"
                             @keydown.enter.prevent=""
-                        >{{ appKeyEditableValue.value ?? device.OTAAapplicationKey }}</div>
+                        ></div>
                     </span>
                 </div>
 
@@ -165,7 +194,7 @@
                             class="edit-input"
                             @input="onLocationInput"
                             @keydown.enter.prevent=""
-                        >{{ locationEditableValue.value ?? device.commentOnLocation }}</div>
+                        ></div>
                     </span>
                 </div>
 
@@ -179,7 +208,7 @@
                             class="edit-input"
                             @input="onCommentInput"
                             @keydown.enter.prevent=""
-                        >{{ commentEditableValue.value ?? device.comment }}</div>
+                        ></div>
                     </span>
                 </div>
 
