@@ -67,23 +67,18 @@
         editingKey.value = key
         isEditing.value = true
         nextTick(() => {
-            if (key === 'name' && nameEditable.value) {
-                nameEditable.value.focus()
+            // Map keys to their corresponding editable refs
+            const editableRefs = {
+                name: nameEditable,
+                commentOnLocation: locationEditable,
+                comment: commentEditable
+            }
+            const editableRef = editableRefs[key]
+            if (editableRef && editableRef.value) {
+                editableRef.value.focus()
                 try {
                     const range = document.createRange()
-                    range.selectNodeContents(nameEditable.value)
-                    range.collapse(false)
-                    const sel = window.getSelection()
-                    sel.removeAllRanges()
-                    sel.addRange(range)
-                } catch (e) {
-                    // ignore selection errors
-                }
-            } else if (key === 'commentOnLocation' && locationEditable.value) {
-                locationEditable.value.focus()
-                try {
-                    const range = document.createRange()
-                    range.selectNodeContents(locationEditable.value)
+                    range.selectNodeContents(editableRef.value)
                     range.collapse(false)
                     const sel = window.getSelection()
                     sel.removeAllRanges()
@@ -98,7 +93,6 @@
     const patchKey = (key, value) => {
         patchingKey.value = key
         isPatching.value = true
-        // console.log('Patching key:', key, 'with value:', value)
         emit('patch', { key, value })
     }
 
@@ -108,7 +102,6 @@
     }
 
     const onKeyEdited = (key, success, message = null) => {
-        // console.log('Key edited:', key, success, message)
         isPatching.value = false
         patchingKey.value = null
     }
