@@ -316,7 +316,7 @@
                 <!-- AppKey -->
                 <div class="detail-item wide">
                     <div class="buttons-wrapper">
-                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.appKey, 'appKey')">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(device.OTAAapplicationKey, 'appKey')">
                             <i :class="[recentlyCopiedKey === 'appKey' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
                         </div>
                     </div>

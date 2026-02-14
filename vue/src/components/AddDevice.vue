@@ -1,5 +1,5 @@
 <script setup>
-    import { nextTick, ref } from 'vue'
+    import { nextTick, ref, computed } from 'vue'
     import { useSettings } from '@/settingsStore.js'
 
     const { state } = useSettings()
@@ -7,6 +7,20 @@
     defineEmits(['device-added'])
 
     const isVisible = ref(false)
+    function closeAddDevice() {
+        // Close the overlay and reset the draft values
+        device.value = { ...newDevice }
+        isVisible.value = false
+        hasValidationError.value = false
+        errorMessage.value = ''
+    }
+    function overlayClick() {
+        // Close overlay on background click but do NOT reset values — preserve draft.
+        isVisible.value = false
+        hasValidationError.value = false
+        errorMessage.value = ''
+    }
+
     const newDevice = {
         name: '',
         devEUI: '',
@@ -71,27 +85,35 @@
             if (commentEditable.value) commentEditable.value.innerText = commentEditableValue.value
         })
     }
-
-    function closeAddDevice() {
-        // Close the overlay and reset the draft values
-        device.value = { ...newDevice }
-        isVisible.value = false
-    }
-
-    function overlayClick() {
-        // Close overlay on background click but do NOT reset values — preserve draft.
-        isVisible.value = false
-    }
-
     function focusNameInput() {
         if (nameEditable.value) {
             nameEditable.value.focus()
         }
     }
 
-    function addDevice() {
-        // Check required fields validity
+    const keyValidity = computed(() => ({
+        name: !!(device.value.name || '').trim(),
+        devEUI: /^[0-9A-Fa-f]{16}$/.test(device.value.devEUI || ''),
+        OTAAapplicationKey: /^[0-9A-Fa-f]{32}$/.test(device.value.OTAAapplicationKey || '')
+    }))
 
+    const isValid = computed(() => Object.values(keyValidity.value).every(Boolean))
+    const hasValidationError = ref(false)
+    const errorMessage = ref('')
+
+    function addDevice() {
+        
+        errorMessage.value = 'Der opstod en fejl under registreringen. Prøv igen senere.'
+        return
+
+        // Use reactive computed validity
+        if (!isValid.value) {
+            // If any required field is invalid, do not proceed
+            hasValidationError.value = true
+            return
+        }
+        
+        errorMessage.value = ''
         // Emit event to parent component with new device details
         // emit('device-added', { ...device.value })
 
@@ -116,8 +138,19 @@
 
             <div class="device-details">
 
+                <!-- Error message -->
+                <div v-if="errorMessage" class="detail-item error error-message wide">
+                    <!-- <div class="buttons-wrapper">
+                        <div class="value-button button" tabindex="-1" @click="copyValueToClipboard(errorMessage.value, 'error')">
+                            <i :class="[recentlyCopiedError === 'error' ? 'fa-solid fa-copy' : 'fa-regular fa-copy']"></i>
+                        </div>
+                    </div> -->
+                    <span class="detail-label">Registrering mislykkedes</span>
+                    <span class="detail-value">{{ errorMessage }}</span>
+                </div>
+
                 <!-- Name -->
-                <div class="detail-item wide">
+                <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.name }]">
                     <span class="detail-label">Navn</span>
                     <span class="detail-value">
                                 <div ref="nameEditable"
@@ -155,7 +188,7 @@
                 <div class="separator margin"></div>
 
                 <!-- EUI -->
-                <div class="detail-item wide">
+                <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.devEUI }]">
                     <span class="detail-label">EUI</span>
                     <span class="detail-value">
                         <div
@@ -169,7 +202,7 @@
                 </div>
 
                 <!-- AppKey -->
-                <div class="detail-item wide">
+                <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.OTAAapplicationKey }]">
                     <span class="detail-label">AppKey</span>
                     <span class="detail-value">
                         <div
@@ -215,7 +248,7 @@
             </div>
 
             <div class="button-wrapper">
-                <button class="primary" style="margin-top: 1rem;" @click="isVisible = false">
+                <button class="primary" style="margin-top: 1rem;" @click="addDevice()">
                     <i class="fa-solid fa-check"></i> Registrér enhed
                 </button>
             </div>
@@ -248,6 +281,8 @@
     width: 40rem;
     max-width: 90%;
     z-index: 6;
+    max-height: 90%;
+    overflow-y: auto;
 }
 .add-device-body .header { 
     font-size: 1.4rem;
@@ -278,6 +313,10 @@ button:not(.close-button) {
 button:not(.close-button) i {
     transform: translateX(-0.4rem);
     margin-right: 0.2rem;
+}
+
+.error-message {
+    margin-bottom: 1rem;
 }
 
 </style>
