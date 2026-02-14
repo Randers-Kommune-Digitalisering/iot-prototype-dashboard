@@ -3,6 +3,8 @@
     import { useSettings } from '@/settingsStore.js'
     import { formatTimeAgo, timeAgoHours } from '../helper'
 
+    const { state } = useSettings()
+
     const emit = defineEmits(['close', 'patch'])
     const isVisible = ref(false)
     const isPatching = ref(false)
@@ -26,7 +28,6 @@
         commentEditableValue.value = e.target.innerText
     }
 
-    const { state } = useSettings()
 
     defineProps({
         device: {
@@ -176,7 +177,7 @@
                     <span class="detail-value">{{ parseInt(device.lorawanSettings?.deviceStatusBattery ?? 0) }}%</span>
                 </div>
 
-                <div class="seperator"></div>
+                <div class="separator"></div>
 
                 <!-- Name -->
                 <div class="detail-item wide">
@@ -299,7 +300,7 @@
                     <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'comment' }]">{{ device.comment == "" || device.comment == "\n" ? '&nbsp;' : device.comment }}</span>
                 </div>
 
-                <div class="seperator"></div>
+                <div class="separator"></div>
 
                 <!-- EUI -->
                 <div class="detail-item wide">
@@ -352,9 +353,9 @@
         background: #2e2e2e;
         border-left: 0.1rem solid #363636;
         transition: transform 0.3s ease;
-        z-index: 1000;
+        z-index: 2;
         margin-top: calc(4.5rem + 3.5rem); /* 4.5 for navbar + 3.5rem for device toolbar */
-        padding: 1.2rem 1.5rem;
+        padding: 1.2rem;
         overflow-y: auto;
         max-height: calc(100vh - (4.5rem + 3.5rem));
     }
@@ -381,161 +382,10 @@
     }
 
 
-    .device-details {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
-    }
-    .device-details .seperator {
-        grid-column: span 2;
-        height: 0.1rem;
-        background-color: #363636;
-        margin: 0.5rem 0;
-    }
-    .device-details .detail-item {
-        display: flex;
-        gap: 0.5rem;
-        flex-direction: column;
-        padding: 0.8rem 1.5rem;
-        border-radius: 0.4rem;
-        transition: background-color 0.2s ease;
-        position: relative;
-    }
-    .device-details .detail-item:hover {
-        background-color: #323232;
-    }
-    .device-details .detail-item:has(.dropdown-wrapper), .detail-item:has(.edit-input) {
-        background-color: #3b3b3b !important;
-    }
-    .device-details .detail-item.wide {
-        grid-column: span 2;
-    }
-    .device-details .detail-item.warning {
-        background-color: rgba(190, 140, 70, 0.25);
-    }
-    .device-details .detail-item.error {
-        background-color: rgba(190, 70, 70, 0.25);
-    }
-    .device-details .detail-item.offline {
-        background-color: rgba(70, 70, 90, 0.25);
-    }
-        .device-details .detail-label {
-            color: #aaa;
-        }
-        .device-details .detail-value {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: #eee;
-        }
-        .detail-item.error-message {
-            transform: translateY(-0.3rem);
-        }
-        .detail-item.error-message .detail-label {
-            font-weight: 700;
-        }
-        .detail-item.error-message .detail-value {
-            font-size: 1rem;
-            font-weight: 400;
-            margin-bottom: 0.2rem;
-        }
-
-    
-    .detail-item .buttons-wrapper {
-        position: absolute;
-        top: 0rem;
-        right: 0rem;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-        padding-right: 0.5rem;
-        opacity: 0;
-        display: flex;
-    }
-    .detail-item:hover .buttons-wrapper {
-        opacity: 1;
-        pointer-events: all;
-    }
-    .detail-item .value-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 3rem;
-        width: 3rem;
-        background-color: inherit;
-    }
-    .detail-item .value-button:hover {
-        color: #ddd;
-        background-color: #6262621c;
-    }
-    .detail-item .value-button:focus,
-    .detail-item .value-button:focus-visible {
-        outline: 0;
-        border-color: transparent !important;
-        background-color: inherit;
-    }
-    
-    .edit-input {
-        outline: none;
-        width: 100%;
-        box-shadow: 0 1px 0 #464646;
-    }
-
-    .dropdown-wrapper {
-        position: absolute;
-        top: 2.3rem;
-        left: 0;
-        right: 0;
-        z-index: 3;
-    }
-    .edit-dropdown {
-        background-color: #3b3b3b;
-        border-bottom-left-radius: 0.4rem;
-        border-bottom-right-radius: 0.4rem;
-        overflow: hidden;
-        width: 100%;
-    }
-    .edit-dropdown .dropdown-option {
-        position: relative;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        transition: background-color 0.15s;
-        padding-bottom: 1rem;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-    }
-    .dropdown-option .current-selection {
-        margin-left: 1rem;
-        color:#aaa;
-        font-size:0.8rem;
-        font-weight: 400;
-    }
-    .dropdown-option:not(:first-child) {
-        padding-top: 1rem;
-    }
-    .dropdown-option:hover {
-        background-color: #464646;
-    }
 
 
     .text-faded {
         color: #aaa !important;
-    }
-    .detail-item .buttons-wrapper:has(.value-button.always-show) {
-        opacity: 1;
-    }
-    .value-button:has(.fa-spinner) {
-        cursor: default;
-        pointer-events: none;
-    }
-    .value-button.always-show {
-        opacity: 1;
-    }
-    .detail-item .buttons-wrapper:has(.value-button.always-show) .value-button:not(.always-show) {
-        opacity: 0;
     }
 
 

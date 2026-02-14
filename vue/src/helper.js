@@ -72,5 +72,17 @@ export function sortGroups(groups, sortBy = 'name') {
     return sortedGroups;
 }
 
-export default { formatTimeAgo, timeAgoHours, sortGroups };
+export function toStringOrNull(value) {
+    if (
+            value === null ||
+            value === undefined ||
+            (typeof value === 'string' && value.trim() === '')
+        
+        ) {
+        return null;
+    }
+    return String(value);
+}
+
+export default { formatTimeAgo, timeAgoHours, sortGroups, toStringOrNull };
 // Named exports are used above; no default export.

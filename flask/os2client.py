@@ -179,6 +179,7 @@ class OS2Client(APIClient):
             raise ValueError("device dict must include the following keys: " + ", ".join(required_keys))
 
         # Build payload
+        device["name"] = device["name"]
         device["applicationId"] = self.application_id
         device["type"] = "LORAWAN"
         device["lorawanSettings"] = {
@@ -191,6 +192,7 @@ class OS2Client(APIClient):
         }
         device["comment"] = device.get("comment", "")
         device["commentOnLocation"] = device.get("commentOnLocation", "")
+        device["deviceModelId"] = device.get("deviceModelId", None)
 
         res = self._post(f"/application/{self.application_id}/iot-device", json=device)
         return res

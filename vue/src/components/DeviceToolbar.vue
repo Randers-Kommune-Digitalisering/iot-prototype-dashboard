@@ -1,5 +1,7 @@
 <script setup>
     import { ref } from 'vue'
+    import AddDevice from '@/components/AddDevice.vue'
+
     const emit = defineEmits(['search-changed', 'view-changed'])
     const selectedView = ref('lokation')
     const searchQuery = ref('')
@@ -7,9 +9,12 @@
         searchQuery.value = ''
         emit('search-changed', searchQuery.value)
     }
+
+    const addDevice = ref(null)
 </script>
 
 <template>
+    <AddDevice ref="addDevice" />
     <div class="device-toolbar">
 
         <div class="device-view">
@@ -44,7 +49,7 @@
         <div class="break"></div>
         
         <div class="device-management">
-            <button title="Tilføj enhed">
+            <button title="Tilføj enhed" @click="addDevice.openAddDevice()">
                 <i class="fa-solid fa-plus"></i> Registrér enhed
             </button>
         </div>
@@ -64,7 +69,7 @@
         align-items: center;
         gap: 1.5rem;
         padding: 0 2rem;
-        z-index: 10;
+        z-index: 2;
     }
     .break {
         height: 60%;

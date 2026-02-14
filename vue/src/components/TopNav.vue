@@ -40,7 +40,7 @@
         align-items: center;
         justify-content: flex-start;
         padding: 0 1rem;
-        z-index: 10;
+        z-index: 4;
     }
         .navbar-items {
             display: flex;
