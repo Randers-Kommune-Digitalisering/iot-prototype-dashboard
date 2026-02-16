@@ -1,8 +1,19 @@
+import logging
+
 import requests
 import urllib3
 from typing import Optional, Dict, Any
 
 from utils.config import OS2_DEVICE_PROFILE_ID
+
+logger = logging.getLogger(__name__)
+
+def _strip(s: str) -> str:
+    """Strip leading/trailing whitespace and newlines from a string."""
+    stripped = s.strip() if isinstance(s, str) else s
+    if stripped == "":
+        return None
+    return stripped
 
 class APIClient:
     def __init__(self, base_url: str, x_api_key: str | None = None, verify: bool | str = True):
@@ -131,7 +142,9 @@ class OS2Client(APIClient):
 
         # GET current device values
         current_payload = self._get(f"/iot-device/{device_id}")
-    
+        for key in current_payload.keys():
+            current_payload[key] = _strip(current_payload[key])
+
         if not isinstance(current_payload, dict):
             # Device not found, raise error
             raise ValueError(f"Device with ID {device_id} was not found or OS2IoT API returned invalid data: {current_payload}")

@@ -4,7 +4,7 @@
     import DeviceDetails from '@/components/DeviceDetails.vue'
     import { useSettings } from '@/settingsStore.js'
     import OS2IoTService from '@/backendService.js'
-    import { formatTimeAgo, timeAgoHours, sortGroups } from '../helper'
+    import { formatTimeAgo, timeAgoHours, sortGroups, toStringOrNull } from '../helper'
 
     const currentView = ref('lokation') // 'lokation' or 'model'
     const deviceToolbar = ref(null)
@@ -31,6 +31,8 @@
     })
 
 
+    /* Device grouping and sorting */
+
     const devicesByType = computed(() => {
         const groups = {}
         const list = Array.isArray(devices.value) ? devices.value : []
@@ -46,7 +48,7 @@
         const groups = {}
         const list = Array.isArray(devices.value) ? devices.value : []
         list.forEach(device => {
-            const location = device?.commentOnLocation ?? 'Ukendt'
+            const location = toStringOrNull(device?.commentOnLocation) ?? 'Ukendt'
             if (!groups[location]) groups[location] = []
             groups[location].push(device)
         })
@@ -68,7 +70,7 @@
     }
 
 
-    /* Search and filtering */ 
+    /* Device search and filtering */ 
 
     const searchQuery = ref('')
 

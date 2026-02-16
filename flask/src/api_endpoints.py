@@ -15,9 +15,9 @@ try:
         x_api_key=OS2_API_KEY,
         verify=OS2_VERIFY,
     )
-    logging.getLogger(__name__).info("OS2Client initialized")
+    logger.info("OS2Client initialized")
 except Exception:
-    logging.exception("Failed to initialize OS2Client; continuing with os2_client=None")
+    logger.exception("Failed to initialize OS2Client; continuing with os2_client=None")
     os2_client = None
 
 
@@ -39,7 +39,7 @@ def get_devices():
         devices = os2_client.get_devices()
         return jsonify({"devices": devices}), 200
     except Exception as e:
-        logging.exception("Error fetching devices from OS2Client")
+        logger.exception("Error fetching devices from OS2Client")
         return jsonify({"error": str(e)}), 500
 
 @api_endpoints.route("/devices/<int:device_id>", methods=["PATCH"])
@@ -58,7 +58,7 @@ def patch_device(device_id: int):
         result = os2_client.patch_device(payload)
         return jsonify(result), 200
     except Exception as e:
-        logging.exception("Error patching device via OS2Client")
+        logger.exception("Error patching device via OS2Client")
         return jsonify({"error": str(e)}), 500
 
 @api_endpoints.route("/devices", methods=["POST"])
@@ -75,5 +75,5 @@ def add_device():
         result = os2_client.add_device(payload)
         return jsonify(result), 201
     except Exception as e:
-        logging.exception("Error adding device via OS2Client")
+        logger.exception("Error adding device via OS2Client")
         return jsonify({"error": str(e)}), 500

@@ -1,7 +1,7 @@
 <script setup>
     import { ref, defineEmits, nextTick } from 'vue'
     import { useSettings } from '@/settingsStore.js'
-    import { formatTimeAgo, timeAgoHours } from '../helper'
+    import { formatTimeAgo, timeAgoHours, toStringOrNull } from '../helper'
 
     const { state } = useSettings()
 
@@ -203,7 +203,7 @@
                                 @keydown.enter.prevent="patchKey('name', nameEditableValue);cancelEdit()"
                                 @blur="cancelEdit()">{{ nameEditableValue.value ?? device.name }}</div>
                     </span>
-                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'name' }]">{{ device.name ?? '&nbsp;' }}</span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'name' }]">{{ toStringOrNull(device.name) ?? '&nbsp;' }}</span>
                 </div>
 
                 <!-- Model -->
@@ -268,7 +268,7 @@
                             @blur="cancelEdit()"
                         >{{ locationEditableValue.value ?? device.commentOnLocation }}</div>
                     </span>
-                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ device.commentOnLocation ?? '&nbsp;' }}</span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'commentOnLocation' }]">{{ toStringOrNull(device.commentOnLocation) ?? '&nbsp;' }}</span>
                 </div>
 
                 <!-- Comment -->
@@ -297,7 +297,7 @@
                             @blur="cancelEdit()"
                         >{{ commentEditableValue.value ?? device.comment }}</div>
                     </span>
-                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'comment' }]">{{ device.comment == "" || device.comment == "\n" ? '&nbsp;' : device.comment }}</span>
+                    <span v-else :class="['detail-value', { 'text-faded': isPatching && patchingKey === 'comment' }]">{{ toStringOrNull(device.comment) ?? '&nbsp;' }}</span>
                 </div>
 
                 <div class="separator"></div>
