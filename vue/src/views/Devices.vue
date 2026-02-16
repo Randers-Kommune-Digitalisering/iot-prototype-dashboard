@@ -140,8 +140,8 @@
             }
             console.log('Device added successfully:', response)
             deviceToolbar.value.onDeviceAdded({ ...device, ...response })
-            // devices.value.push(response) // Assuming the response contains the newly created device object
-            // showDeviceDetails(device)
+            devices.value.push(response) // Assuming the response contains the newly created device object
+            showDeviceDetails(devices.value[devices.value.length - 1]) // Show details of the newly added device
         } catch (err) {
             console.error('Failed to add device:', err)
             deviceToolbar.value.onDeviceAdded({ ...device, 'error': err.message })

@@ -207,5 +207,5 @@ class OS2Client(APIClient):
         device["commentOnLocation"] = device.get("commentOnLocation", "")
         device["deviceModelId"] = device.get("deviceModelId", None)
 
-        res = self._post(f"/application/{self.application_id}/iot-device", json=device)
+        res = self._post(f"/iot-device", json=device)
         return res

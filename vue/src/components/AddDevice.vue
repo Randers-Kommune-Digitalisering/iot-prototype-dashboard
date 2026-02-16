@@ -23,7 +23,7 @@
 
     const newDevice = {
         name: '',
-        devEUI: '',
+        deviceEUI: '',
         OTAAapplicationKey: '',
         deviceModelId: null,
         commentOnLocation: '',
@@ -54,7 +54,7 @@
     const euiEditableValue = ref('')
     const onEuiInput = (e) => {
         euiEditableValue.value = e.target.innerText
-        device.value.devEUI = euiEditableValue.value
+        device.value.deviceEUI = euiEditableValue.value
     }
     const appKeyEditable = ref(null)
     const appKeyEditableValue = ref('')
@@ -70,7 +70,7 @@
         // contenteditable fields show the last-entered draft.
         console.log('Opening Add Device with current device state:', JSON.parse(JSON.stringify(device.value)))
         nameEditableValue.value = device.value.name || ''
-        euiEditableValue.value = device.value.devEUI || ''
+        euiEditableValue.value = device.value.deviceEUI || ''
         appKeyEditableValue.value = device.value.OTAAapplicationKey || ''
         locationEditableValue.value = device.value.commentOnLocation || ''
         commentEditableValue.value = device.value.comment || ''
@@ -95,7 +95,7 @@
 
     const keyValidity = computed(() => ({
         name: !!(device.value.name || '').trim(),
-        devEUI: /^[0-9A-Fa-f]{16}$/.test(device.value.devEUI || ''),
+        deviceEUI: /^[0-9A-Fa-f]{16}$/.test(device.value.deviceEUI || ''),
         OTAAapplicationKey: /^[0-9A-Fa-f]{32}$/.test(device.value.OTAAapplicationKey || '')
     }))
 
@@ -142,7 +142,6 @@
                 }, 10000)
                 nextTick(() => {
                     device.value = { ...newDevice }
-                    console.log('Device reset for next entry:', JSON.parse(JSON.stringify(device.value)))
                     nameEditableValue.value = ''
                     euiEditableValue.value = ''
                     appKeyEditableValue.value = ''
@@ -248,7 +247,7 @@
                 <div class="separator margin"></div>
 
                 <!-- EUI -->
-                <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.devEUI }]">
+                <div :class="['detail-item', 'wide', { 'error': hasValidationError && !keyValidity.deviceEUI }]">
                     <span class="detail-label">EUI</span>
                     <span class="detail-value">
                         <div
@@ -259,7 +258,7 @@
                             @input="onEuiInput"
                             @keydown.enter.prevent=""
                         ></div>
-                        <span v-else>{{ toStringOrNull(device.devEUI) ?? '&nbsp;' }}</span>
+                        <span v-else>{{ toStringOrNull(device.deviceEUI) ?? '&nbsp;' }}</span>
                     </span>
                 </div>
 

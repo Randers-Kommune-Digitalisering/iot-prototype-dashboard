@@ -63,7 +63,6 @@ def patch_device(device_id: int):
 
 @api_endpoints.route("/devices", methods=["POST"])
 def add_device():
-    return request.get_json(silent=True) or {}, 201
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
 
@@ -72,7 +71,7 @@ def add_device():
         return jsonify({"error": "Invalid or missing JSON payload"}), 400
 
     try:
-        result = os2_client.add_device(payload)
+        result = os2_client.create_device(payload)
         return jsonify(result), 201
     except Exception as e:
         logger.exception("Error adding device via OS2Client")
