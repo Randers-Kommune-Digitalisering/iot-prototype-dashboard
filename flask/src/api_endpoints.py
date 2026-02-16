@@ -31,6 +31,7 @@ def status():
         "os2_verify": OS2_VERIFY,
         "os2_health": os2_client.get_health() if os2_client else None}), 200
 
+
 @api_endpoints.route("/devices", methods=["GET"])
 def get_devices():
     if not os2_client:
@@ -41,6 +42,7 @@ def get_devices():
     except Exception as e:
         logger.exception("Error fetching devices from OS2Client")
         return jsonify({"error": str(e)}), 500
+
 
 @api_endpoints.route("/devices/<int:device_id>", methods=["PATCH"])
 def patch_device(device_id: int):
@@ -60,6 +62,7 @@ def patch_device(device_id: int):
     except Exception as e:
         logger.exception("Error patching device via OS2Client")
         return jsonify({"error": str(e)}), 500
+
 
 @api_endpoints.route("/devices", methods=["POST"])
 def add_device():

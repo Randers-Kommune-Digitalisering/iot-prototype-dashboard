@@ -8,12 +8,14 @@ from utils.config import OS2_DEVICE_PROFILE_ID
 
 logger = logging.getLogger(__name__)
 
+
 def _strip(s: str) -> str:
     """Strip leading/trailing whitespace and newlines from a string."""
     stripped = s.strip() if isinstance(s, str) else s
     if stripped == "":
         return None
     return stripped
+
 
 class APIClient:
     def __init__(self, base_url: str, x_api_key: str | None = None, verify: bool | str = True):
@@ -33,6 +35,7 @@ class APIClient:
         # If verification is disabled, suppress the insecure request warning
         if not verify:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     def _get(self, endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
         """Make a GET request."""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
@@ -121,7 +124,7 @@ class OS2Client(APIClient):
         """Get a list of devices."""
         res = self._get(f"/application/{self.application_id}/iot-devices")
         return res.get("data", [])
-    
+
     def patch_device(self, device: Dict[str, Any]) -> Dict[str, Any]:
         """Fetch a device, overwrite fields from `device`, then PUT the result.
 
@@ -185,7 +188,7 @@ class OS2Client(APIClient):
         """
         if not isinstance(device, dict):
             raise TypeError("device must be a dict")
-        
+
         required_keys = {"name", "OTAAapplicationKey", "deviceEUI"}
 
         if any(key not in device for key in required_keys):
@@ -207,5 +210,5 @@ class OS2Client(APIClient):
         device["commentOnLocation"] = device.get("commentOnLocation", "")
         device["deviceModelId"] = device.get("deviceModelId", None)
 
-        res = self._post(f"/iot-device", json=device)
+        res = self._post("/iot-device", json=device)
         return res

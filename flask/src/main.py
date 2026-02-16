@@ -36,6 +36,7 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
+
 if __name__ == '__main__':  # pragma: no cover
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.run(debug=DEBUG, host='0.0.0.0', port=PORT, use_reloader=True)
