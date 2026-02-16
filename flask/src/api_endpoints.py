@@ -1,18 +1,13 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import os
 import logging
-from config import OS2_API_BASE_URL, OS2_APPLICATION_ID, OS2_API_KEY, OS2_VERIFY
+
+from flask import Blueprint, jsonify, request
+from utils.config import OS2_API_BASE_URL, OS2_APPLICATION_ID, OS2_API_KEY, OS2_VERIFY
 from os2client import OS2Client
-import time
 
-app = Flask(__name__)
+logger = logging.getLogger(__name__)
+api_endpoints = Blueprint('api', __name__, url_prefix='/api')
 
-# Allow cross-origin requests during development
-# Restrict origins in production as appropriate
-CORS(app)
-
-# Initialize OS2Client using environment variables with sensible defaults
+# Initialize OS2Client using environment variables
 try:
     os2_client = OS2Client(
         base_url=OS2_API_BASE_URL,
@@ -26,17 +21,17 @@ except Exception:
     os2_client = None
 
 
-@app.route("/health", methods=["GET"])
-def health():
+@api_endpoints.route('/status', methods=['GET'])
+def status():
     os2_status = "ok" if os2_client else "error"
     return jsonify({
-        "status": "ok",
+        "success": True, "message":
+        "API is up and running",
         "os2_client_status": os2_status,
         "os2_verify": OS2_VERIFY,
-        "os2_health": os2_client.get_health() if os2_client else None
-    }), 200
+        "os2_health": os2_client.get_health() if os2_client else None}), 200
 
-@app.route("/api/devices", methods=["GET"])
+@api_endpoints.route("/devices", methods=["GET"])
 def get_devices():
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
@@ -47,7 +42,7 @@ def get_devices():
         logging.exception("Error fetching devices from OS2Client")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/devices/<int:device_id>", methods=["PATCH"])
+@api_endpoints.route("/devices/<int:device_id>", methods=["PATCH"])
 def patch_device(device_id: int):
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
@@ -66,7 +61,7 @@ def patch_device(device_id: int):
         logging.exception("Error patching device via OS2Client")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/devices", methods=["POST"])
+@api_endpoints.route("/devices", methods=["POST"])
 def add_device():
     return request.get_json(silent=True) or {}, 201
     if not os2_client:
@@ -82,12 +77,3 @@ def add_device():
     except Exception as e:
         logging.exception("Error adding device via OS2Client")
         return jsonify({"error": str(e)}), 500
-
-
-if __name__ == "__main__":
-    # Enable development features when running directly:
-    # - debug=True enables the interactive debugger and sets logging to DEBUG
-    # - use_reloader=True restarts the process when source files change
-    # - TEMPLATES_AUTO_RELOAD makes template changes reload without restart
-    app.config["TEMPLATES_AUTO_RELOAD"] = True
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)

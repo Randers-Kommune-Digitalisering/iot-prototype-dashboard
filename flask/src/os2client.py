@@ -2,7 +2,7 @@ import requests
 import urllib3
 from typing import Optional, Dict, Any
 
-from config import OS2_DEVICE_PROFILE_ID
+from utils.config import OS2_DEVICE_PROFILE_ID
 
 class APIClient:
     def __init__(self, base_url: str, x_api_key: str | None = None, verify: bool | str = True):

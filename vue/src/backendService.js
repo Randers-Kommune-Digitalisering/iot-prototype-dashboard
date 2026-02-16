@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:3000/api';
 
 class BackendService {
     async _get(endpoint) {
@@ -48,7 +48,7 @@ class BackendService {
 
 class OS2IoTService extends BackendService {
     getHealth() {
-        return this._get('/health');
+        return this._get('/status');
     }
     getDevices() {
         return this._get('/devices');

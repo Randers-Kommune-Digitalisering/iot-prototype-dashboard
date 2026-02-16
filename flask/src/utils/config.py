@@ -1,11 +1,14 @@
-from pathlib import Path
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
-# Load .env from repository root so values are available in os.environ
-env_path = Path(__file__).resolve().parent.parent / '.env'
-if env_path.exists():
-	load_dotenv(dotenv_path=env_path)
+
+# loads .env file, will not overide already set enviroment variables (will do nothing when testing, building and deploying)
+load_dotenv()
+
+
+DEBUG = os.getenv('DEBUG', 'False') in ['True', 'true']
+PORT = os.getenv('PORT', '8080')
+POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 
 OS2_API_BASE_URL = os.environ.get("OS2_IOT_API_BASE_URL", "https://os2iot-backend.prod.os2iot.kmd.dk/api/v1/")
 OS2_API_KEY = os.environ.get("OS2_API_KEY")  # Required
