@@ -10,7 +10,7 @@ set_logging_configuration()
 
 
 def create_app():
-    app = Flask(__name__, static_folder='dist', static_url_path='/')
+    app = Flask(__name__, static_folder='dist')
     health = HealthCheck()
     app.add_url_rule('/healthz', 'healthcheck', view_func=lambda: health.run())
     app.add_url_rule('/metrics', 'metrics', view_func=generate_latest)
@@ -30,11 +30,8 @@ app = create_app()
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+def index(path):
+    return app.send_static_file('index.html')
 
 
 if __name__ == '__main__':  # pragma: no cover
