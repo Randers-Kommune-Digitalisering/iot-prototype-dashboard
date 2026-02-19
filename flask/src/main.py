@@ -1,5 +1,4 @@
-import os
-from flask import Flask, send_from_directory
+from flask import Flask
 from healthcheck import HealthCheck
 from prometheus_client import generate_latest
 from utils.logging import set_logging_configuration, is_ready_gauge, last_updated_gauge
