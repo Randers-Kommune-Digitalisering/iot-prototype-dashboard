@@ -106,11 +106,11 @@
 
     function addDevice() {
         // Use reactive computed validity
-        // if (!isValid.value) {
-        //     // If any required field is invalid, do not proceed
-        //     hasValidationError.value = true
-        //     return
-        // }
+        if (!isValid.value) {
+            // If any required field is invalid, do not proceed
+            hasValidationError.value = true
+            return
+        }
         errorMessage.value = ''
 
         // Emit event to parent component with new device details
