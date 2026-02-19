@@ -27,6 +27,11 @@ def create_app():
 app = create_app()
 
 
+@app.route('/assets/<path:path>')
+def static_file(path):
+    return app.send_static_file('assets/' + path)
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
