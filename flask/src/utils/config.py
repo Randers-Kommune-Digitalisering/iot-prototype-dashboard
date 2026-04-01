@@ -10,6 +10,8 @@ DEBUG = os.getenv('DEBUG', 'False') in ['True', 'true']
 PORT = os.getenv('PORT', '8080')
 POD_NAME = os.getenv('POD_NAME', 'pod_name_not_set')
 
+DEVELOPER_MODE = os.getenv('DEVELOPER_MODE', os.getenv('DEBUG', 'False')) in ['True', 'true']
+
 OS2_API_BASE_URL = os.environ.get("OS2_IOT_API_BASE_URL", "https://os2iot-backend.prod.os2iot.kmd.dk/api/v1/")
 OS2_API_KEY = os.environ.get("OS2_API_KEY")  # Required
 OS2_APPLICATION_ID = int(os.environ.get("OS2_APPLICATION_ID"))  # Required

@@ -212,3 +212,8 @@ class OS2Client(APIClient):
 
         res = self._post("/iot-device", json=device)
         return res
+
+    def get_device_models(self) -> Dict[str, Any]:
+        """Get a list of device models."""
+        res = self._get("/device-model")
+        return res.get("data", [])

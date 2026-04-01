@@ -1,7 +1,7 @@
 import logging
 
 from flask import Blueprint, jsonify, request
-from utils.config import OS2_API_BASE_URL, OS2_APPLICATION_ID, OS2_API_KEY, OS2_VERIFY
+from utils.config import OS2_API_BASE_URL, OS2_APPLICATION_ID, OS2_API_KEY, OS2_VERIFY, DEVELOPER_MODE
 from os2client import OS2Client
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,21 @@ def status():
         "os2_client_status": os2_status,
         "os2_verify": OS2_VERIFY,
         "os2_health": os2_client.get_health() if os2_client else None}), 200
+
+
+@api_endpoints.route("/settings", methods=["GET"])
+def get_settings():
+    if not os2_client:
+        return jsonify({"error": "OS2Client not initialized"}), 500
+    try:
+        device_models = os2_client.get_device_models()
+        return jsonify({
+            "deviceModels": device_models,
+            "developerMode": DEVELOPER_MODE
+        }), 200
+    except Exception as e:
+        logger.exception("Error fetching device models from OS2Client")
+        return jsonify({"error": str(e)}), 500
 
 
 @api_endpoints.route("/devices", methods=["GET"])

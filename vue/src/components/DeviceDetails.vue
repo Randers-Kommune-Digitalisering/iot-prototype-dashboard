@@ -233,7 +233,7 @@
                                      v-for="model in state.values.deviceModels.filter(model => model.id !== device.deviceModel?.id)"
                                      :key="model.id"
                                      @click="patchKey('deviceModelId', model.id);cancelEdit()">
-                                        {{ model.name ?? model.id }}
+                                        {{ model.body?.name }}
                                 </div>
                                 <div class="dropdown-option" v-if="device.deviceModel" @click="patchKey('deviceModelId', null);cancelEdit()">
                                     Ingen

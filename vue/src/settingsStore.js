@@ -7,7 +7,7 @@ const defaultSettings = {
     lastSeen: { warning: 24, offline: 72 } // in hours
   },
   developerMode: true,
-  deviceModels: [{"id": 5, "name": "Brunata brugsvandsmåler"}, {"id": 6, "name": "Brunata El måler"}]
+  deviceModels: []
 }
 
 const state = reactive({
