@@ -235,6 +235,9 @@
                                      @click="patchKey('deviceModelId', model.id);cancelEdit()">
                                         {{ model.name ?? model.id }}
                                 </div>
+                                <div class="dropdown-option" v-if="device.deviceModel" @click="patchKey('deviceModelId', null);cancelEdit()">
+                                    Ingen
+                                </div>
                             </div>
                         </div>
                         &nbsp;

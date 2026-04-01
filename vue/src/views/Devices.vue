@@ -119,9 +119,10 @@
                 if (key === 'deviceModelId') {
                     // If device model was changed, we need to update the whole device model object in the devices list
                     const newModel = response.deviceModel
-                    if (newModel) {
+                    if (newModel)
                         devices.value[deviceIndex]['deviceModel'] = newModel
-                    }
+                    else 
+                        devices.value[deviceIndex]['deviceModel'] = null
                 } else
                     devices.value[deviceIndex][key] = value
             }
