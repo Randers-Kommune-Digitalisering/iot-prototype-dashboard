@@ -129,7 +129,7 @@
             deviceDetails.value.onKeyEdited(key, true)
         } catch (err) {
             console.error('Failed to update device:', err)
-            deviceDetails.value.onKeyEdited(key, false, 'Opdatering mislykkedes')
+            deviceDetails.value.onKeyEdited(key, false, 'Der opstod en fejl under opdatering af enheden.')
         }
     }
 

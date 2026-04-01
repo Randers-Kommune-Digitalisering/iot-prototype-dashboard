@@ -1,7 +1,7 @@
 <script setup>
     const navItems = [
         { name: 'Enheder', link: '/devices', icon: 'fa-solid fa-satellite-dish' },
-        // { name: 'Modeller', link: '/models', icon: 'fa-solid fa-microchip' },
+        { name: 'Modeller', link: '/models', icon: 'fa-solid fa-microchip' },
         // { name: 'Alarmer', link: '/alarms', icon: 'fa-solid fa-bell' },
         // { name: 'Eksport', link: '/export', icon: 'fa-solid fa-chart-line' },
         // { name: 'Indstillinger', link: '/settings', icon: 'fa-solid fa-cog' },

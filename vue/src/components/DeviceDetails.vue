@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, defineEmits, nextTick } from 'vue'
+    import { ref, defineEmits, nextTick, watch } from 'vue'
     import { useSettings } from '@/settingsStore.js'
     import { formatTimeAgo, timeAgoHours, toStringOrNull } from '../helper'
 
@@ -29,7 +29,7 @@
     }
 
 
-    defineProps({
+    const props = defineProps({
         device: {
             type: Object,
             required: true
@@ -62,7 +62,6 @@
                 console.error('Failed to copy value:', err)
             })
     }
-
     
     const editKey = (key) => {
         editingKey.value = key
@@ -105,11 +104,22 @@
     const onKeyEdited = (key, success, message = null) => {
         isPatching.value = false
         patchingKey.value = null
+        if (!success) {
+            props.device.error = message ?? 'Der opstod en fejl under opdatering af enheden.'
+        }
     }
 
     defineExpose({
         showSidebar,
         onKeyEdited
+    })
+
+    watch(() => props.device, () => {
+        // Reset editing and patching states when device changes
+        isEditing.value = false
+        editingKey.value = null
+        isPatching.value = false
+        patchingKey.value = null
     })
 </script>
 
@@ -383,13 +393,10 @@
         padding-left: 0.5rem;
         font-size: 1.15rem;
     }
-
-
-
-
     .text-faded {
         color: #aaa !important;
     }
-
-
+    .error-message .detail-value {
+        font-size: 1.1rem;
+    }
 </style>
