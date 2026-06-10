@@ -29,13 +29,36 @@ def status():
         "API is up and running",
         "os2_client_status": os2_status,
         "os2_verify": OS2_VERIFY,
-        "os2_health": os2_client.get_health() if os2_client else None}), 200
+        "os2_health": os2_client.get_health() if os2_client else None
+    }), 200
+
+
+@api_endpoints.route('/test', methods=['GET'])
+def test():
+    return jsonify(os2_client._set_data_target(device_id=4353, device_model={
+    "body": {
+      "brandName": "AXIØMA",
+      "category": "meter",
+      "controlledProperty": [
+        "electricityConsumption"
+      ],
+      "id": "axioma_e3",
+      "manufacturerName": "AXIØMA",
+      "modelName": "Qalcosonic E3",
+      "name": "AXIØMA Qalcosonic E3",
+      "type": "DeviceModel"
+    },
+    "createdAt": "2026-05-05T09:04:33.705Z",
+    "id": 10,
+    "updatedAt": "2026-05-05T09:04:33.705Z"
+  })), 200
 
 
 @api_endpoints.route("/settings", methods=["GET"])
 def get_settings():
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
+
     try:
         device_models = os2_client.get_device_models()
         return jsonify({
@@ -51,6 +74,7 @@ def get_settings():
 def get_devices():
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
+
     try:
         devices = os2_client.get_devices()
         return jsonify({"devices": devices}), 200

@@ -1,10 +1,11 @@
 import logging
+import re
 
 import requests
 import urllib3
 from typing import Optional, Dict, Any
 
-from utils.config import OS2_DEVICE_PROFILE_ID
+from utils.config import OS2_DATA_TARGET_ID, OS2_DEVICE_PROFILE_ID
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,78 @@ class OS2Client(APIClient):
         """Get the health status of the OS2IoT API."""
         return self._get("/healthcheck")
 
+    def _set_data_target(self, device_id: int, device_model: dict) -> Dict[str, Any]:
+        """Set the data target for a device."""
+        if not OS2_DATA_TARGET_ID:
+            raise ValueError("OS2_DATA_TARGET_ID is not set in environment variables")
+        if not device_model or not isinstance(device_model, dict):
+            raise ValueError("device_model is required and must be a dictionary")
+
+        # GET desired payload decoder from device model name
+        decoders = self._get("/payload-decoder/minimal")
+        decoder_string_id = str(device_model.get("body").get("id"))
+        pattern = re.compile(rf"^Randers \[Ento\] .* <id:{re.escape(decoder_string_id)}>$")
+        decoder = next((pd for pd in decoders.get("data", []) if pattern.match(str(pd.get("name", "")))), None)
+        decoder_id = decoder.get("id") if decoder else None
+
+        if not decoder_id:
+            raise ValueError(f"No matching payload decoder found for device model ID {decoder_string_id}")
+
+        # GET existing data target connections, and find an active connection for application if it exists
+        device_connections = self._get(f"/iot-device-payload-decoder-data-target-connection/byIotDevice/{device_id}")
+        active_device_connection = next((conn for conn in device_connections.get("data", []) if conn.get("dataTarget").get("id") == OS2_DATA_TARGET_ID), None)
+
+        if active_device_connection:
+            active_decoder_id = active_device_connection.get("payloadDecoder").get("id") if active_device_connection else None
+
+            # If the active decoder is already correct, do nothing
+            if active_decoder_id == decoder_id:
+                logger.info(f"Data target connection for device {device_id} already has the correct decoder {decoder_id}; no update needed")
+                return True
+
+            # Otherwise, remove the device from the existing connection (if any)
+            # First, refetch device connection to get entire device list for that payload decoder
+            decoder_connections = self._get(f"/iot-device-payload-decoder-data-target-connection/byDataTarget/{OS2_DATA_TARGET_ID}")
+            active_device_connection = next((conn for conn in decoder_connections.get("data", []) if conn.get("payloadDecoder").get("id") == active_decoder_id), None)
+
+            iot_device_ids = [device.get("id") for device in active_device_connection.get("iotDevices", [])]
+            iot_device_ids.remove(device_id)  # Remove the device from the existing connection's device list
+            update_payload = {
+                "dataTargetId": OS2_DATA_TARGET_ID,
+                "payloadDecoderId": active_decoder_id,
+                "iotDeviceIds": iot_device_ids
+            }
+            connection_id = active_device_connection.get("id")
+            self._put(f"/iot-device-payload-decoder-data-target-connection/{connection_id}", json=update_payload)
+            logger.info(f"Deleted existing data target connection {connection_id} for device {device_id} to prepare for decoder update")
+
+        # Update the connection for the new decoder,
+        # either by reusing the existing connection or creating a new one
+        # First, GET existing connections to find an existing connection for the new decoder (decoder_id)
+        decoder_connections = self._get(f"/iot-device-payload-decoder-data-target-connection/byDataTarget/{OS2_DATA_TARGET_ID}")
+        existing_decoder_connection = next((conn for conn in decoder_connections.get("data", []) if conn.get("payloadDecoder").get("id") == decoder_id), None)
+
+        if existing_decoder_connection:
+            # If a connection already exists for the new decoder, reuse it
+            iot_device_ids = [device.get("id") for device in existing_decoder_connection.get("iotDevices", [])]
+            iot_device_ids.append(device_id)  # Add the new device to the existing connection's device list
+            update_payload = {
+                "dataTargetId": OS2_DATA_TARGET_ID,
+                "payloadDecoderId": decoder_id,
+                "iotDeviceIds": iot_device_ids
+            }
+            connection_id = existing_decoder_connection.get("id")
+            self._put(f"/iot-device-payload-decoder-data-target-connection/{connection_id}", json=update_payload)
+            logger.info(f"Updated existing data target connection {connection_id} to use device {device_id} and decoder {decoder_id}")
+
+            return True
+
+        # else:
+            # If no connection exists for this application/device, create a new one
+            # TODO: Implement logic
+
+        return False  # Placeholder until decoder logic is implemented
+
     def get_devices(self) -> Dict[str, Any]:
         """Get a list of devices."""
         res = self._get(f"/application/{self.application_id}/iot-devices")
@@ -152,6 +225,10 @@ class OS2Client(APIClient):
             # Device not found, raise error
             raise ValueError(f"Device with ID {device_id} was not found or OS2IoT API returned invalid data: {current_payload}")
 
+        # TODO: Update data target if device-model has changed and OS2_DATA_TARGET_ID is set
+        # if OS2_DATA_TARGET_ID and "deviceModelId" in current_payload and current_payload["deviceModelId"] != device.get("deviceModelId"):
+        #     current_payload["dataTargetId"] = OS2_DATA_TARGET_ID
+
         # Overwrite with provided values
         merged = dict(current_payload)
         merged.update(device)
@@ -169,9 +246,9 @@ class OS2Client(APIClient):
                     merged["deviceModelId"] = device_model["id"]
                     del merged["deviceModel"]  # Remove nested deviceModel after extracting id
                 else:
-                    print(f"deviceModel for device {device_id} does not contain an 'id' field")
+                    logger.error(f"deviceModel for device {device_id} does not contain an 'id' field")
             else:
-                print(f"No valid deviceModel found for device {device_id}; cannot extract deviceModelId")
+                logger.error(f"No valid deviceModel found for device {device_id}; cannot extract deviceModelId")
 
         # Delete latest data from payload
         del merged["receivedMessagesMetadata"]
