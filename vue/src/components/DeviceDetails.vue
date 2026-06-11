@@ -104,9 +104,7 @@
     const onKeyEdited = (key, success, message = null) => {
         isPatching.value = false
         patchingKey.value = null
-        if (!success) {
-            props.device.error = message ?? 'Der opstod en fejl under opdatering af enheden.'
-        }
+        props.device.error = success ? null : (message ?? 'Der opstod en fejl under opdatering af enheden.')
     }
 
     defineExpose({
