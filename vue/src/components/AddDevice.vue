@@ -196,10 +196,10 @@
                     <div class="detail-label">
                         <i class="fa-solid fa-check"></i>
                         <span style="font-weight: 500;">{{ device.name }}</span> blev registreret
-                        <template  v-if="device.deviceModelId">
+                        <template v-if="device.deviceModelId">
                             som
                             <span style="color:rgb(123, 136, 171);">
-                                {{ state.values.deviceModels.find(model => model.id === device.deviceModelId)?.name ?? device.deviceModelId }}
+                                {{ state.values.deviceModels.find(model => model.id === device.deviceModelId)?.body?.name ?? 'ukendt model' }}
                             </span>
                         </template>
                     </div>
@@ -234,14 +234,14 @@
                                      v-for="model in state.values.deviceModels"
                                      :key="model.id"
                                      @click="device.deviceModelId = model.id; isEditingModel = false">
-                                        {{ model.name ?? model.id }}
+                                        {{ model.body?.name }}
                                         <span class="current-selection" v-if="device.deviceModelId === model.id">Nuværende valg</span>
                                 </div>
                             </div>
                         </div>
                         &nbsp;
                     </span>
-                    <span class="detail-value" v-else>{{ device.deviceModelId ? state.values.deviceModels.find(model => model.id === device.deviceModelId)?.name ?? device.deviceModelId : 'Ingen' }}</span>
+                    <span class="detail-value" v-else>{{ device.deviceModelId ? state.values.deviceModels.find(model => model.id === device.deviceModelId)?.body?.name : 'Ingen' }}</span>
                 </div>
 
                 <div class="separator margin"></div>

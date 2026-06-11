@@ -184,7 +184,7 @@
                             <template v-if="device.latestReceivedMessage?.sentTime">{{ formatTimeAgo(device.latestReceivedMessage?.sentTime) }} siden</template>
                             <template v-else>Ukendt</template>
                         </div>
-                        <div :class="['synced-ento', device.isSyncedWithEnto ? 'synced' : 'not-synced']"><i :class="['fa-solid', 'fa-chart-line', ]"></i> {{ device.isSyncedWithEnto ? 'Seneste data findes i Ento' : 'Data mangler i Ento' }}</div>
+                        <!-- <div :class="['synced-ento', device.isSyncedWithEnto ? 'synced' : 'not-synced']"><i :class="['fa-solid', 'fa-chart-line', ]"></i> {{ device.isSyncedWithEnto ? 'Seneste data findes i Ento' : 'Data mangler i Ento' }}</div> -->
                         <div class="device-model" v-if="currentView !== 'model'"><i class="fa-solid fa-microchip"></i> {{ device.deviceModel?.body?.name }}</div>
                         <div class="location" v-if="currentView !== 'lokation'"><i class="fa-solid fa-house-chimney"></i> {{ device.commentOnLocation ?? 'Ukendt' }}</div>
                         
