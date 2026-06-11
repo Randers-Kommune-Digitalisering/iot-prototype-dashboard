@@ -19,13 +19,17 @@ OS2_DEVICE_PROFILE_ID = os.environ.get("OS2_DEVICE_PROFILE_ID")  # Required
 OS2_DATA_TARGET_ID = os.environ.get("OS2_DATA_TARGET_ID")  # Required for Ento data export
 OS2_VERIFY = os.environ.get("OS2_VERIFY", "True") in ["True", "true", "1"]  # Convert to boolean
 
-# Validate types
-if OS2_APPLICATION_ID:
-    try:
-        OS2_APPLICATION_ID = int(OS2_APPLICATION_ID)
-    except ValueError:
-        raise ValueError(f"OS2_APPLICATION_ID must be an integer if set, got: {OS2_APPLICATION_ID}")
-if OS2_DATA_TARGET_ID:
+# Validate types / required values
+if OS2_APPLICATION_ID in (None, ""):
+    raise ValueError("OS2_APPLICATION_ID is required and must be an integer")
+try:
+    OS2_APPLICATION_ID = int(OS2_APPLICATION_ID)
+except (TypeError, ValueError):
+    raise ValueError(f"OS2_APPLICATION_ID must be an integer, got: {OS2_APPLICATION_ID}")
+
+if OS2_DATA_TARGET_ID in (None, ""):
+    OS2_DATA_TARGET_ID = None
+else:
     try:
         OS2_DATA_TARGET_ID = int(OS2_DATA_TARGET_ID)
     except ValueError:
