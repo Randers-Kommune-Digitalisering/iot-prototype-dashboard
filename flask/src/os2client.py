@@ -121,26 +121,31 @@ class OS2Client(APIClient):
         """Get the health status of the OS2IoT API."""
         return self._get("/healthcheck")
 
-    def _set_data_target(self, device_id: int, device_model_id: int) -> Dict[str, Any]:
+    def _set_data_target(self, device_id: int, device_model_id: int | None) -> None:
         """Set the data target for a device."""
         if not OS2_DATA_TARGET_ID:
             raise ValueError("OS2_DATA_TARGET_ID is not set in environment variables")
-        if not isinstance(device_model_id, int):
-            raise ValueError("device_model_id is required and must be an integer")
+        if not isinstance(device_model_id, int) and device_model_id is not None:
+            raise ValueError("device_model_id is required and must be an integer or None")
 
         # GET desired payload decoder from device model name
         decoders = self._get("/payload-decoder/minimal")
         device_model = next((dm for dm in self.get_device_models() if dm.get("id") == device_model_id), None)
-        if not device_model:
+        decoder_id = None
+
+        if device_model_id and not device_model:
             raise ValueError(f"No device model found for ID {device_model_id}")
 
-        decoder_string_id = str(device_model.get("body", {}).get("id"))
-        pattern = re.compile(rf"^Randers \[Ento\] .* <id:{re.escape(decoder_string_id)}>$")
-        decoder = next((pd for pd in decoders.get("data", []) if pattern.match(str(pd.get("name", "")))), None)
-        decoder_id = decoder.get("id") if decoder else None
+        elif device_model:
+            # The decoder name is expected to include the device model ID in the format "Randers [Ento] <id:{device_model_id}>",
+            # so we can use a regex to find the correct decoder for the new device model
+            decoder_string_id = str(device_model.get("body", {}).get("id"))
+            pattern = re.compile(rf"^Randers \[Ento\] .* <id:{re.escape(decoder_string_id)}>$")
+            decoder = next((pd for pd in decoders.get("data", []) if pattern.match(str(pd.get("name", "")))), None)
+            decoder_id = decoder.get("id") if decoder else None
 
-        if not decoder_id:
-            raise ValueError(f"No matching payload decoder found for device model ID {decoder_string_id}")
+            if not decoder_id:
+                raise ValueError(f"No matching payload decoder found for device model ID {decoder_string_id}")
 
         # GET existing data target connections, and find an active connection for application if it exists
         device_connections = self._get(f"/iot-device-payload-decoder-data-target-connection/byIotDevice/{device_id}")
@@ -150,9 +155,9 @@ class OS2Client(APIClient):
             active_decoder_id = active_device_connection.get("payloadDecoder").get("id") if active_device_connection else None
 
             # If the active decoder is already correct, do nothing
-            if active_decoder_id == decoder_id:
+            if decoder_id and active_decoder_id == decoder_id:
                 logger.info(f"Data target connection for device {device_id} already has the correct decoder {decoder_id}; no update needed")
-                return True
+                return
 
             # Otherwise, remove the device from its current connection (if any).
             # First, refetch device connection to get entire device list for that payload decoder
@@ -175,6 +180,9 @@ class OS2Client(APIClient):
                         "iotDeviceIds": iot_device_ids
                     }
                     self._put(f"/iot-device-payload-decoder-data-target-connection/{connection_id}", json=update_payload)
+                if device_model_id is None:
+                    # If no new device model is set, we are done after removing from old connection
+                    return
 
         # Update the connection for the new decoder,
         # either by reusing the existing connection or creating a new one
@@ -195,7 +203,7 @@ class OS2Client(APIClient):
             self._put(f"/iot-device-payload-decoder-data-target-connection/{connection_id}", json=update_payload)
             logger.info(f"Updated existing data target connection {connection_id} to use device {device_id} and decoder {decoder_id}")
 
-            return True
+            return
 
         else:
             # If no connection exists for this application/device, create a new one
@@ -207,7 +215,7 @@ class OS2Client(APIClient):
             self._post("/iot-device-payload-decoder-data-target-connection", json=create_payload)
             logger.info(f"Created new data target connection for device {device_id} and decoder {decoder_id}")
 
-        return True
+        return
 
     def get_devices(self) -> Dict[str, Any]:
         """Get a list of devices."""
@@ -242,7 +250,8 @@ class OS2Client(APIClient):
             raise ValueError(f"Device with ID {device_id} was not found or OS2IoT API returned invalid data: {current_payload}")
 
         # Update data target if device-model has changed and OS2_DATA_TARGET_ID is set
-        if OS2_DATA_TARGET_ID and device.get("deviceModelId") and current_payload.get("deviceModel", {}).get("id") != device.get("deviceModelId"):
+        current_device_model_id = None if current_payload.get("deviceModel") is None else current_payload.get("deviceModel", {}).get("id")
+        if OS2_DATA_TARGET_ID and (device.get("deviceModelId") or device.get("deviceModelId") is None) and current_device_model_id != device.get("deviceModelId"):
             logger.info(f"Device model change detected for device {device_id} (new model: {device.get('deviceModelId')}), updating data target connection accordingly")
             self._set_data_target(device_id, device.get("deviceModelId"))
 
