@@ -1,8 +1,9 @@
 import os
+import json
 from dotenv import load_dotenv
 
 
-# loads .env file, will not overide already set enviroment variables (will do nothing when testing, building and deploying)
+# loads .env file, will not override already set environment variables (will do nothing when testing, building and deploying)
 load_dotenv()
 
 
@@ -16,7 +17,8 @@ OS2_API_BASE_URL = os.environ.get("OS2_IOT_API_BASE_URL", "https://os2iot-backen
 OS2_API_KEY = os.environ.get("OS2_API_KEY")  # Required
 OS2_APPLICATION_ID = os.environ.get("OS2_APPLICATION_ID")  # Required
 OS2_DEVICE_PROFILE_ID = os.environ.get("OS2_DEVICE_PROFILE_ID")  # Required
-OS2_DATA_TARGET_ID = os.environ.get("OS2_DATA_TARGET_ID")  # Required for Ento data export
+OS2_DATA_TARGET_ID = os.environ.get("OS2_DATA_TARGET_ID")  # Required for Ento data export - default data target
+OS2_DATA_TARGET_DEVICE_MAP = json.loads(os.environ.get("OS2_DATA_TARGET_DEVICE_MAP", "{}"))  # Required for Ento data export - map that defines data targets for specific device models
 OS2_VERIFY = os.environ.get("OS2_VERIFY", "True") in ["True", "true", "1"]  # Convert to boolean
 
 # Validate types / required values
