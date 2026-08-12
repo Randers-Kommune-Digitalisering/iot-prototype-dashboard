@@ -29,13 +29,15 @@ def status():
         "API is up and running",
         "os2_client_status": os2_status,
         "os2_verify": OS2_VERIFY,
-        "os2_health": os2_client.get_health() if os2_client else None}), 200
+        "os2_health": os2_client.get_health() if os2_client else None
+    }), 200
 
 
 @api_endpoints.route("/settings", methods=["GET"])
 def get_settings():
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
+
     try:
         device_models = os2_client.get_device_models()
         return jsonify({
@@ -51,6 +53,7 @@ def get_settings():
 def get_devices():
     if not os2_client:
         return jsonify({"error": "OS2Client not initialized"}), 500
+
     try:
         devices = os2_client.get_devices()
         return jsonify({"devices": devices}), 200
