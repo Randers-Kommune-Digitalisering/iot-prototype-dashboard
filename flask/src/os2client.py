@@ -184,6 +184,12 @@ class OS2Client(APIClient):
                     # If no new device model is set, we are done after removing from old connection
                     return
 
+        # If no new device model is set, do not create or reassign any decoder connection.
+        # This also prevents fallthrough when no active/current connection was found above.
+        if device_model_id is None:
+            logger.info(f"Device model unset for device {device_id}; no new data target connection will be created")
+            return
+
         # Update the connection for the new decoder,
         # either by reusing the existing connection or creating a new one
         # First, GET existing connections to find an existing connection for the new decoder (decoder_id)
