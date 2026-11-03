@@ -231,8 +231,8 @@
     .device-item {
         position: relative;
         padding: 0.7rem 1rem;
-        width: 15rem;
-        height: 12rem;
+        width: 15.5rem;
+        height: 12.5rem;
         background-color: var(--color-device-card-default);
         border-radius: 0.5rem;
         overflow: hidden;

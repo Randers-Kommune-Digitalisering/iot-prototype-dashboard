@@ -100,10 +100,10 @@
         --color-surface-overlay: rgba(20, 34, 51, 0.2);
         --color-surface-faint: rgba(20, 34, 51, 0.08);
 
-        --color-nav-bg: #dce5ef;
+        --color-nav-bg: #acc3dd;
         --color-nav-item: #314558;
-        --color-nav-item-hover: #cad8e7;
-        --color-nav-item-active: #b8cade;
+        --color-nav-item-hover: #bacce2;
+        --color-nav-item-active: #bed1e9;
         --color-nav-item-active-text: #172a3d;
 
         --color-device-card-default: #dae7d7;
