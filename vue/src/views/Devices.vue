@@ -14,8 +14,34 @@
     const { state } = useSettings()
 
     const devices = ref([])
+    const deviceStorageKey = 'iot-prototype-dashboard:devices'
+
+    const loadCachedDevices = () => {
+        try {
+            const cachedDevices = sessionStorage.getItem(deviceStorageKey)
+            if (cachedDevices === null) return
+
+            const parsedDevices = JSON.parse(cachedDevices)
+            if (!Array.isArray(parsedDevices)) {
+                console.warn('Cached devices data format is invalid')
+                return
+            }
+            devices.value = parsedDevices
+        } catch (err) {
+            console.error('Failed to load cached devices:', err)
+        }
+    }
+
+    const storeDevices = (deviceList) => {
+        try {
+            sessionStorage.setItem(deviceStorageKey, JSON.stringify(deviceList))
+        } catch (err) {
+            console.error('Failed to store devices:', err)
+        }
+    }
 
     onMounted(async () => {
+        loadCachedDevices()
         try {
             console.log('Loading devices from backend...')
             const data = await OS2IoTService.getDevices()
@@ -25,6 +51,7 @@
             }
             console.log('Devices loaded:', data.devices)
             devices.value = data.devices
+            storeDevices(data.devices)
         } catch (err) {
             console.error('Failed to load devices:', err)
         }
