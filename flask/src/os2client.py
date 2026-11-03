@@ -121,7 +121,7 @@ class OS2Client(APIClient):
         """Get the health status of the OS2IoT API."""
         return self._get("/healthcheck")
 
-    def _set_data_target(self, device_id: int, device_model_id: int | None, previous_data_target: int | None = None) -> None:
+    def _set_data_target(self, device_id: int, device_model_id: int | None, data_target: int | None = None, previous_data_target: int | None = None) -> None:
         """Set the data target for a device."""
         if not isinstance(device_model_id, int) and device_model_id is not None:
             raise ValueError("device_model_id is required and must be an integer or None")
@@ -133,7 +133,6 @@ class OS2Client(APIClient):
             raise ValueError(f"No device model found for ID {device_model_id}")
 
         device_model_string_id = str(device_model.get("body", {}).get("id")) if device_model else None
-        data_target = OS2_DATA_TARGET_DEVICE_MAP.get(device_model_string_id) if device_model_string_id is not None else OS2_DATA_TARGET_ID
         if not data_target:
             raise ValueError("No data target found for the given device model and OS2_DATA_TARGET_ID is not set in environment variables")
 
@@ -304,7 +303,8 @@ class OS2Client(APIClient):
             None,
         ) if device.get("deviceModelId") is not None else None
 
-        data_target = OS2_DATA_TARGET_DEVICE_MAP.get(new_device_model_string_id) if new_device_model_string_id is not None else OS2_DATA_TARGET_ID
+        data_target = OS2_DATA_TARGET_DEVICE_MAP.get(new_device_model_string_id, OS2_DATA_TARGET_ID) \
+            if new_device_model_string_id is not None else OS2_DATA_TARGET_ID
         logger.info(
             f"Current device model ID: {current_device_model_id} ({current_device_model_string_id}), "
             f"New device model ID: {device.get('deviceModelId')} ({new_device_model_string_id}), "
@@ -312,10 +312,11 @@ class OS2Client(APIClient):
         )
         if data_target and current_device_model_id != device.get("deviceModelId"):
             logger.info(f"Device model change detected for device {device_id} (new model: {device.get('deviceModelId')}), updating data target connection accordingly")
-            previous_data_target = OS2_DATA_TARGET_ID if current_device_model_id is None else OS2_DATA_TARGET_DEVICE_MAP.get(current_device_model_string_id)
+            previous_data_target = OS2_DATA_TARGET_ID if current_device_model_id is None else OS2_DATA_TARGET_DEVICE_MAP.get(current_device_model_string_id, OS2_DATA_TARGET_ID)
             self._set_data_target(
                 device_id,
                 device.get("deviceModelId"),
+                data_target=data_target,
                 previous_data_target=previous_data_target,
             )
 
