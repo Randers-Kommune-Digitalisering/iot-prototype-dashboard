@@ -11,6 +11,6 @@
 
 <style scoped>
 h1 {
-  color: #42b983;
+  color: var(--color-link-home);
 }
 </style>

@@ -233,8 +233,7 @@
         padding: 0.7rem 1rem;
         width: 15rem;
         height: 12rem;
-        /* background-color: rgb(87, 79, 68); */
-        background-color: rgb(69, 81, 69);
+        background-color: var(--color-device-card-default);
         border-radius: 0.5rem;
         overflow: hidden;
         user-select: none;
@@ -245,19 +244,19 @@
         flex-direction: column;
     }
     .device-item:hover {
-        outline: 0.1rem solid #8c8c8c;
+        outline: 0.1rem solid var(--color-device-card-outline-hover);
     }
     .device-item.selected {
-        outline: 0.1rem solid #ffffff;
+        outline: 0.1rem solid var(--color-device-card-outline-selected);
     }
     .device-item.error {
-        background-color: rgb(87, 69, 69);
+        background-color: var(--color-device-card-error);
     }
     .device-item.warning {
-        background-color: rgb(87, 79, 68);
+        background-color: var(--color-device-card-warning);
     }
     .device-item.offline {
-        background-color: rgb(69, 69, 77);
+        background-color: var(--color-device-card-offline);
     }
         .device-name {
             font-size: 1.1rem;
@@ -276,20 +275,20 @@
             display: flex;
             align-items: center;
             gap: 0.2rem;
-            color: rgb(150, 150, 150);
+            color: var(--color-text-subtle);
         }
             .status .warning {
-                color: rgb(190, 145, 115) !important;
+                color: var(--color-status-warning) !important;
             }
             .status .error {
-                color: rgb(190, 115, 115) !important;
+                color: var(--color-status-error) !important;
             }
 
     .device-info {
         margin-top: auto;
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
-        color: rgb(180, 180, 180);
+        color: var(--color-text-primary);
         display: flex;
         flex-direction: column;
         gap: 0.3rem;
@@ -304,10 +303,10 @@
             transform: translateY(15%);
         }
         .device-info .device-model {
-            color: rgb(123, 136, 171);
+            color: var(--color-device-model);
         }
         .device-info .location {
-            color: rgb(169, 171, 123);
+            color: var(--color-device-location);
         }
 
     .device-message {
@@ -320,13 +319,13 @@
         white-space: nowrap;
     }
     .device-message.error {
-        background-color: rgb(139, 72, 72);
+        background-color: var(--color-banner-error);
     }
     .device-message.warning {
-        background-color: rgb(139, 114, 72);
+        background-color: var(--color-banner-warning);
     }
     .device-message.offline {
-        background-color: rgb(72, 72, 139);
+        background-color: var(--color-banner-offline);
     }
         .device-message .scroll-wrap {
             width: 100%;
@@ -337,11 +336,11 @@
             white-space: nowrap;
             transform: translateX(100%);
             animation: marquee 12s linear infinite;
-            color: rgb(230, 230, 230);
+            color: var(--color-text-strong);
         }
         .device-message .text {
             margin-right: 1rem;
-            color: rgb(230, 230, 230);
+            color: var(--color-text-strong);
             font-size: 0.9rem;
         }
         @keyframes marquee {

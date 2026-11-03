@@ -361,8 +361,8 @@
         right: 0;
         width: 35rem;
         height: 100vh;
-        background: #2e2e2e;
-        border-left: 0.1rem solid #363636;
+        background: var(--color-surface-panel);
+        border-left: 0.1rem solid var(--color-border-subtle);
         transition: transform 0.3s ease;
         z-index: 2;
         margin-top: calc(4.5rem + 3.5rem); /* 4.5 for navbar + 3.5rem for device toolbar */
@@ -386,13 +386,13 @@
         margin-bottom: 0.5rem;
     }
     .device-model {
-        color: #aaa;
+        color: var(--color-text-muted);
         margin-bottom: 2rem;
         padding-left: 0.5rem;
         font-size: 1.15rem;
     }
     .text-faded {
-        color: #aaa !important;
+        color: var(--color-text-muted) !important;
     }
     .error-message .detail-value {
         font-size: 1.1rem;
