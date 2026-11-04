@@ -76,7 +76,7 @@
         left: 0;
         right: 0;
         height: 3.5rem;
-        background-color: rgb(28, 28, 28);
+        background-color: var(--color-surface-toolbar);
         display: flex;
         align-items: center;
         gap: 1.5rem;
@@ -86,7 +86,7 @@
     .break {
         height: 60%;
         width: 0.05rem;
-        background-color: rgb(42, 42, 42);
+        background-color: var(--color-surface-toolbar-separator);
     }
     .device-view {
         display: flex;
@@ -108,22 +108,22 @@
             display: inline-flex;
             align-items: center;
             border-radius: 0.5rem;
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
+            background: var(--color-surface-toggle);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border-muted);
             transition: background 0.2s, color 0.2s, border 0.2s;
             font-size: 1rem;
             user-select: none;
             box-sizing: border-box;
         }
         .toggle-radio span.active {
-            background: #fff;
-            color: #222;
-            border: 1px solid #fff;
+            background: var(--color-text-primary);
+            color: var(--color-surface-toggle);
+            border: 1px solid var(--color-text-primary);
         }
         .toggle-radio span:not(.active):hover {
-            border-color: #5d5d5d !important;
-            background-color: #262626;
+            border-color: var(--color-border-hover) !important;
+            background-color: var(--color-surface-toggle-hover);
         }
     .device-search {
         display: flex;
@@ -134,16 +134,16 @@
         padding: 0 .6rem;
         height: 2.45rem;
         border-radius: 0.5rem;
-        background: #222;
-        color: #fff;
-        border: 1px solid #444;
+        background: var(--color-surface-toggle);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border-muted);
         transition: background 0.2s, color 0.2s, border 0.2s;
         font-size: 1rem;
         box-sizing: border-box;
     }
 
     button {
-        border: 1px solid #444;
+        border: 1px solid var(--color-border-muted);
         font-weight: 400;
     }
     .clear-button {

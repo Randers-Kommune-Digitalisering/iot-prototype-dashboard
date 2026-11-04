@@ -1,7 +1,7 @@
 <script setup>
     const navItems = [
         { name: 'Enheder', link: '/devices', icon: 'fa-solid fa-satellite-dish' },
-        // { name: 'Modeller', link: '/models', icon: 'fa-solid fa-microchip' },
+        { name: 'Modeller', link: '/models', icon: 'fa-solid fa-microchip' },
         // { name: 'Alarmer', link: '/alarms', icon: 'fa-solid fa-bell' },
         // { name: 'Eksport', link: '/export', icon: 'fa-solid fa-chart-line' },
         // { name: 'Indstillinger', link: '/settings', icon: 'fa-solid fa-cog' },
@@ -36,8 +36,8 @@
         left: 0;
         right: 0;
         height: 4.5rem;
-        background-color: #2c3e50;
-        color: rgb(110, 41, 41);
+        background-color: var(--color-nav-bg);
+        color: var(--color-nav-item);
         display: flex;
         align-items: center;
         justify-content: flex-start;
@@ -50,7 +50,7 @@
         }
         .navbar-items .navbar-item {
             font-size: 1.6rem;
-            color: rgb(200, 200, 200);
+            color: var(--color-nav-item);
             padding: 0rem 1.8rem;
             height: 100%;
             transition: background-color 0.15s;
@@ -58,12 +58,12 @@
             align-items: center;
         }
         .navbar-items .navbar-item:hover, .navbar-items .navbar-item:focus {
-            background-color: #314456;
+            background-color: var(--color-nav-item-hover);
             outline: 0;
         }
         .navbar-items .navbar-item.router-link-active {
-            background-color: #243242;
-            color:rgb(230, 230, 230);
+            background-color: var(--color-nav-item-active);
+            color: var(--color-nav-item-active-text);
         }
             .navbar-items .navbar-item i {
                 margin-right: 1rem;

@@ -196,10 +196,10 @@
                     <div class="detail-label">
                         <i class="fa-solid fa-check"></i>
                         <span style="font-weight: 500;">{{ device.name }}</span> blev registreret
-                        <template  v-if="device.deviceModelId">
+                        <template v-if="device.deviceModelId">
                             som
-                            <span style="color:rgb(123, 136, 171);">
-                                {{ state.values.deviceModels.find(model => model.id === device.deviceModelId)?.name ?? device.deviceModelId }}
+                            <span class="model-name">
+                                {{ state.values.deviceModels.find(model => model.id === device.deviceModelId)?.body?.name ?? 'ukendt model' }}
                             </span>
                         </template>
                     </div>
@@ -234,14 +234,14 @@
                                      v-for="model in state.values.deviceModels"
                                      :key="model.id"
                                      @click="device.deviceModelId = model.id; isEditingModel = false">
-                                        {{ model.name ?? model.id }}
+                                        {{ model.body?.name }}
                                         <span class="current-selection" v-if="device.deviceModelId === model.id">Nuværende valg</span>
                                 </div>
                             </div>
                         </div>
                         &nbsp;
                     </span>
-                    <span class="detail-value" v-else>{{ device.deviceModelId ? state.values.deviceModels.find(model => model.id === device.deviceModelId)?.name ?? device.deviceModelId : 'Ingen' }}</span>
+                    <span class="detail-value" v-else>{{ device.deviceModelId ? state.values.deviceModels.find(model => model.id === device.deviceModelId)?.body?.name : 'Ingen' }}</span>
                 </div>
 
                 <div class="separator margin"></div>
@@ -336,15 +336,15 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--color-surface-overlay);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 5;
 }
 .add-device-body {
-    background: #2e2e2e;
-    border: 0.1rem solid #363636;
+    background: var(--color-surface-panel);
+    border: 0.1rem solid var(--color-border-subtle);
     padding: 1.2rem;
     border-radius: 0.5rem;
     width: 40rem;
@@ -400,9 +400,13 @@ button > span {
 }
 
 .device-added-success i.fa-check {
-    color: #4BB543;
+    color: var(--color-success);
     margin-right: 0.6rem;
     transform: translateY(0.05rem);
+}
+
+.device-added-success .model-name {
+    color: var(--color-device-model);
 }
 
 </style>
