@@ -134,7 +134,7 @@ class OS2Client(APIClient):
 
         device_model_string_id = str(device_model.get("body", {}).get("id")) if device_model else None
         if not data_target:
-            raise ValueError("No data target found for the given device model and OS2_DATA_TARGET_ID is not set in environment variables")
+            raise ValueError("No data target set; OS2_DATA_TARGET_DEVICE_MAP holds null for this device model")
 
         def _remove_device_from_connection(connection: Dict[str, Any], target_id: int) -> None:
             """Remove device from a data target connection, deleting it if empty."""

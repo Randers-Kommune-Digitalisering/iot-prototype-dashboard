@@ -30,9 +30,8 @@ except (TypeError, ValueError):
     raise ValueError(f"OS2_APPLICATION_ID must be an integer, got: {OS2_APPLICATION_ID}")
 
 if OS2_DATA_TARGET_ID in (None, ""):
-    OS2_DATA_TARGET_ID = None
-else:
-    try:
-        OS2_DATA_TARGET_ID = int(OS2_DATA_TARGET_ID)
-    except ValueError:
-        raise ValueError(f"OS2_DATA_TARGET_ID must be an integer if set, got: {OS2_DATA_TARGET_ID}")
+    raise ValueError("OS2_DATA_TARGET_ID is required and must be an integer")
+try:
+    OS2_DATA_TARGET_ID = int(OS2_DATA_TARGET_ID)
+except (TypeError, ValueError):
+    raise ValueError(f"OS2_DATA_TARGET_ID must be an integer, got: {OS2_DATA_TARGET_ID}")
